@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #0066cc;
+        }
+        h2 { font-size: 18px; color: #333; margin-bottom: 16px; font-weight: 600; }
+        h3 { font-size: 15px; color: #444; margin-bottom: 12px; font-weight: 600; }
+
+        /* Buttons */
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.15s;
+        }
+        button:hover { background: #0052a3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .btn-secondary { background: #6b7280; }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .btn-group { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+
+        /* Forms */
+        .section {
+            background: white;
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+        input[type="file"] { padding: 8px; }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 2px rgba(0,102,204,0.15);
+        }
+        select { cursor: pointer; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .tab:hover { color: #333; background: #f9f9f9; }
+        .tab.active { color: #0066cc; border-bottom-color: #0066cc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 14px;
+        }
+        .message.show { display: block; }
+        .message.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .message.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .message.info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+        /* Tables */
+        .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+            color: #333;
+        }
+        .table td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .table tr:hover td { background: #fafafa; }
+
+        /* Status badges */
+        .status-ready {
+            color: #10b981; font-weight: 600;
+            background: #ecfdf5; padding: 4px 8px; border-radius: 3px; font-size: 13px;
+        }
+        .status-incomplete {
+            color: #ea580c; font-weight: 600;
+            background: #fff7ed; padding: 4px 8px; border-radius: 3px; font-size: 13px;
+        }
+        .badge {
+            display: inline-block; padding: 3px 8px; border-radius: 3px;
+            font-size: 12px; font-weight: 500;
+        }
+        .badge-jar    { background: #dbeafe; color: #1e40af; }
+        .badge-config { background: #e0e7ff; color: #4338ca; }
+        .badge-missing { background: #fee2e2; color: #991b1b; }
+
+        /* Algorithm cards */
+        .algo-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #fafafa;
+            transition: box-shadow 0.15s;
+        }
+        .algo-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .algo-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .algo-id { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+        .algo-files { margin-bottom: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .algo-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Utility */
+        .empty   { text-align: center; color: #999; padding: 32px; font-style: italic; }
+        .loading { text-align: center; color: #666; padding: 24px; }
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid #ddd;
+            border-top-color: #0066cc;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Modal */
+        .modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 6px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .modal-content h2 {
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #0066cc;
+        }
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .modal-stat {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+        }
+        .modal-stat.highlight { background: #ecfdf5; }
+        .modal-stat-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .modal-stat-value { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .modal-stat.highlight .modal-stat-value { color: #10b981; font-size: 20px; }
+
+        /* Producer status box */
+        .producer-status-box {
+            padding: 14px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            border-left: 3px solid #ddd;
+        }
+        .producer-status-box.running { border-left-color: #10b981; background: #f0fdf4; }
+
+        /* Collapsible form panel */
+        .panel {
+            display: none;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Tree view */
+        .tree-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .tree-entry:hover { background: #f8fafc; }
+        .tree-entry-name { display: flex; align-items: center; gap: 8px; word-break: break-all; }
+        .tree-children { margin-left: 24px; border-left: 2px solid #eef2f7; padding-left: 4px; }
+        .tree-meta { font-size: 12px; color: #6b7280; white-space: nowrap; }
+
+        /* Divider */
+        .divider { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Algorithm Management</h1>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(event, 'upload')">Upload</div>
+        <div class="tab" onclick="switchTab(event, 'manage')">Verwaltung</div>
+        <div class="tab" onclick="switchTab(event, 'kafka')">Kafka</div>
+        <!-- <div class="tab" onclick="switchTab(event, 'results')">Ergebnisse</div> -->
+     </div>
+
+     <!-- ===================== UPLOAD TAB ===================== -->
+    <div id="upload" class="tab-content active">
+        <div class="section">
+            <h2>JAR hochladen</h2>
+            <div id="uploadJarMessage" class="message"></div>
+            <form id="uploadJarForm" onsubmit="uploadJar(event)">
+                <div class="form-group">
+                    <label for="algorithmIdJar">Algorithm ID <small style="font-weight:normal;color:#888">(z.B. cabuk)</small> *</label>
+                    <input type="text" id="algorithmIdJar" placeholder="cabuk" required>
+                </div>
+                <div class="form-group">
+                    <label for="jarFile">JAR-Datei *</label>
+                    <input type="file" id="jarFile" accept=".jar" required>
+                </div>
+                <button type="submit" id="uploadJarBtn">JAR hochladen</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>Config hochladen</h2>
+            <div id="uploadConfigMessage" class="message"></div>
+            <form id="uploadConfigForm" onsubmit="uploadConfig(event)">
+                <div class="form-group">
+                    <label for="algorithmIdConfig">Algorithm ID <small style="font-weight:normal;color:#888">(z.B. cabuk)</small> *</label>
+                    <input type="text" id="algorithmIdConfig" placeholder="cabuk" required>
+                </div>
+                <div class="form-group">
+                    <label for="configFile">Config JSON *</label>
+                    <input type="file" id="configFile" accept=".json" required>
+                </div>
+                <button type="submit" id="uploadConfigBtn">Config hochladen</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MANAGE TAB ===================== -->
+    <div id="manage" class="tab-content">
+        <div class="section">
+            <h2>Verfügbare Algorithmen</h2>
+            <div class="btn-group">
+                <button onclick="refreshAlgorithmsNow()">Aktualisieren</button>
+            </div>
+            <div id="algorithmsLoading" class="loading" style="display:none">
+                <span class="spinner"></span> Lädt...
+            </div>
+            <div id="algorithmsContent"></div>
+        </div>
+    </div>
+
+    <!-- ===================== KAFKA TAB ===================== -->
+    <div id="kafka" class="tab-content">
+
+        <!-- Producer Control -->
+        <div class="section">
+            <h2>Kafka Producer</h2>
+            <div id="kafkaHealthMessage" class="message"></div>
+            <div class="btn-group">
+                <button class="btn-secondary btn-sm" onclick="checkKafkaHealth()">Verbindung prüfen</button>
+            </div>
+
+            <!-- Producer status -->
+            <div id="producerStatusBox" class="producer-status-box">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span><strong>Status:</strong> <span id="producerStatusText">Gestoppt</span></span>
+                    <button class="btn-danger btn-sm" onclick="stopProducer()" id="btnStopProducer" style="display:none">Stoppen</button>
+                </div>
+                <div id="producerDetails" style="display:none;margin-top:10px;font-size:13px;color:#555;line-height:1.8;">
+                    <span>Modus: <strong id="producerMode">-</strong></span> &nbsp;|&nbsp;
+                    <span>Quelle: <strong id="producerSource">-</strong></span> &nbsp;|&nbsp;
+                    <span>Topic: <strong id="producerTopic">-</strong></span>
+                    <div id="producerFilterRow" style="display:none;margin-top:4px;">Filter: <code id="producerFilter"></code></div>
+                </div>
+            </div>
+            <div id="producerStatusMessage" class="message"></div>
+
+            <!-- Live Capture -->
+            <h3>Live Capture</h3>
+            <div class="form-group">
+                <label for="liveInterface">Netzwerk Interface</label>
+                <select id="liveInterface"><option value="">Lädt...</option></select>
+            </div>
+            <div class="form-group">
+                <label for="liveTopic">Ziel-Topic</label>
+                <input type="text" id="liveTopic" value="network-flows">
+            </div>
+            <div class="form-group">
+                <label for="liveBpfFilter">
+                    BPF Filter <small style="font-weight:normal;color:#888">(optional)</small>
+                </label>
+                <input type="text" id="liveBpfFilter" placeholder="z.B. tcp port 80 or udp">
+                <div class="btn-group" style="margin-top:8px;">
+                    <button type="button" class="btn-secondary btn-sm" onclick="setBpfFilter('tcp')">TCP</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="setBpfFilter('udp')">UDP</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="setBpfFilter('tcp port 80 or tcp port 443')">HTTP/S</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="setBpfFilter('icmp')">ICMP</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="setBpfFilter('host 192.168.1.1')">Specific Host</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="setBpfFilter('')">✕ Clear</button>
+                </div>
+                <small style="color:#888">Beispiele: <code>tcp and port 22</code>, <code>net 192.168.0.0/16</code>, <code>not arp</code></small>
+            </div>
+            <button class="btn-success" onclick="startLiveCapture()" id="btnStartLive">▶ Live Capture starten</button>
+
+            <hr class="divider">
+
+            <!-- PCAP File -->
+            <h3>PCAP File Production</h3>
+            <div class="form-group">
+                <label for="pcapFile">PCAP Datei</label>
+                <select id="pcapFile"><option value="">Lädt...</option></select>
+            </div>
+            <div class="form-group">
+                <label for="fileTopic">Ziel-Topic</label>
+                <input type="text" id="fileTopic" value="network-flows">
+            </div>
+            <div class="form-group">
+                <label for="maxPackets">Max. Pakete <small style="font-weight:normal;color:#888">(0 = alle)</small></label>
+                <input type="number" id="maxPackets" value="0" min="0" style="width:160px;">
+            </div>
+            <button class="btn-success" onclick="startFileProduction()" id="btnStartFile">▶ File Production starten</button>
+        </div>
+
+        <!-- Kafka Topics -->
+        <div class="section">
+            <h2>Kafka Topics</h2>
+            <div id="kafkaTopicsMessage" class="message"></div>
+            <div class="btn-group">
+                <button onclick="loadKafkaTopics()">Aktualisieren</button>
+                <button class="btn-success" onclick="togglePanel('createTopicPanel')">＋ Neues Topic</button>
+            </div>
+
+            <div id="createTopicPanel" class="panel">
+                <h3>Neues Topic erstellen</h3>
+                <div class="form-group">
+                    <label for="newTopicName">Topic Name *</label>
+                    <input type="text" id="newTopicName" placeholder="z.B. detection-results-v2">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="newTopicPartitions">Partitions</label>
+                        <input type="number" id="newTopicPartitions" value="3" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="newTopicReplication">Replication Factor</label>
+                        <input type="number" id="newTopicReplication" value="1" min="1">
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-success" onclick="createKafkaTopic()">✓ Erstellen</button>
+                    <button class="btn-secondary" onclick="togglePanel('createTopicPanel')">Abbrechen</button>
+                </div>
+            </div>
+
+            <div id="kafkaTopicsLoading" class="loading" style="display:none">
+                <span class="spinner"></span> Lädt Topics...
+            </div>
+            <div id="kafkaTopicsContent"></div>
+        </div>
+
+        <!-- Consumer Groups -->
+        <div class="section">
+            <h2>Consumer Groups</h2>
+            <div class="btn-group">
+                <button onclick="loadConsumerGroups()">Aktualisieren</button>
+            </div>
+            <div id="consumerGroupsLoading" class="loading" style="display:none">
+                <span class="spinner"></span> Lädt Consumer Groups...
+            </div>
+            <div id="consumerGroupsContent"></div>
+        </div>
+    </div>
+
+<!--    &lt;!&ndash; ===================== RESULTS TAB ===================== &ndash;&gt;-->
+<!--    <div id="results" class="tab-content">-->
+<!--        <div class="section">-->
+<!--            <h2>Ergebnisse</h2>-->
+<!--            <p style="margin-bottom:16px;color:#666;font-size:14px;">-->
+<!--                Zeigt die Struktur des Result-Ordners und erlaubt den Download einzelner Dateien.-->
+<!--            </p>-->
+<!--            <div id="resultsMessage" class="message"></div>-->
+<!--            <div class="btn-group">-->
+<!--                <button onclick="loadResultsTree()">Aktualisieren</button>-->
+<!--            </div>-->
+<!--            <div id="resultsLoading" class="loading" style="display:none">-->
+<!--                <span class="spinner"></span> Lädt Ergebnisse...-->
+<!--            </div>-->
+<!--            <div id="resultsContent"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <!-- External Dashboards -->
+    <div class="section">
+        <h2>Externe Dashboards</h2>
+        <div class="btn-group">
+            <a id="flinkDashboardLink" href="http://localhost:8081" target="_blank"
+               style="display:inline-block;background:#0066cc;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:500;font-size:14px;">
+                Flink Dashboard
+            </a>
+            <a id="openObserveLink" href="http://localhost:5080" target="_blank"
+               style="display:inline-block;background:#f46800;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;font-weight:500;font-size:14px;">
+                   OpenObserve
+            </a>
+        </div>
+        <p style="font-size:13px;color:#666;margin-top:8px;">
+            <strong>Flink Dashboard</strong>  Monitor running jobs &nbsp;|&nbsp;
+            <strong>OpenObserve</strong>  Visualize logs and detection results
+        </p>
+    </div>
+</div>
+
+<script>
+    const API_BASE          = '/api/algorithms';
+    const KAFKA_API_BASE    = '/api/kafka';
+    const PRODUCER_API_BASE = '/api/kafka/producer';
+
+    let producerStatusInterval = null;
+
+    // ============================================================
+    // UTILITY FUNCTIONS
+    // ============================================================
+
+    function escapeHtml(str) {
+        if (str == null) return '';
+        const d = document.createElement('div');
+        d.textContent = String(str);
+        return d.innerHTML;
+    }
+
+    async function handleResponse(response) {
+        if (!response.ok) {
+            let msg = `HTTP ${response.status}`;
+            try {
+                const data = await response.json();
+                msg = data.error || data.message || msg;
+            } catch (e) {
+                msg = response.statusText || msg;
+            }
+            throw new Error(msg);
+        }
+        return response.json();
+    }
+
+    function showMessage(elementId, text, type) {
+        const el = typeof elementId === 'string'
+            ? document.getElementById(elementId)
+            : elementId;
+        if (!el) return;
+        el.innerHTML = text;
+        el.className = `message show ${type}`;
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => el.classList.remove('show'), 5000);
+    }
+
+    function togglePanel(panelId) {
+        const panel = document.getElementById(panelId);
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // ============================================================
+    // GENERIC HELPERS
+    // ============================================================
+
+    async function uploadFile(event, config) {
+        event.preventDefault();
+        const { idField, fileField, endpoint, messageDiv, formId, btnId, fileParam } = config;
+        const id   = document.getElementById(idField).value.trim();
+        const file = document.getElementById(fileField).files[0];
+        const msg  = document.getElementById(messageDiv);
+        const btn  = document.getElementById(btnId);
+
+        if (!id || !file) {
+            showMessage(msg, 'Bitte ID und Datei auswählen', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append(fileParam, file);
+        btn.disabled = true;
+
+        try {
+            await handleResponse(await fetch(
+                `${API_BASE}/${endpoint}/${encodeURIComponent(id)}`,
+                { method: 'POST', body: formData }
+            ));
+            showMessage(msg, `✓ ${fileParam.toUpperCase()} hochgeladen: ${escapeHtml(id)}`, 'success');
+            document.getElementById(formId).reset();
+        } catch (e) {
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function deleteResource(id, config) {
+        if (!confirm(config.confirmMsg(id))) return;
+        try {
+            await handleResponse(await fetch(
+                `${API_BASE}/${encodeURIComponent(id)}${config.endpoint}`,
+                { method: 'DELETE' }
+            ));
+            config.onSuccess();
+        } catch (e) {
+            showMessage(config.messageDiv || null, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    async function populateSelect(selectId, url, mapFn) {
+        try {
+            const data = await handleResponse(await fetch(url));
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">-- Wählen --</option>';
+            mapFn(data).forEach(({ value, label }) => {
+                const opt = document.createElement('option');
+                opt.value   = value;
+                opt.textContent = label;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error(`populateSelect(${selectId}) failed:`, e);
+            const select = document.getElementById(selectId);
+            if (select) select.innerHTML = '<option value="">Fehler beim Laden</option>';
+        }
+    }
+
+    async function loadList(config) {
+        const { loadingId, contentId, url, emptyMsg, renderFn } = config;
+        const loading = document.getElementById(loadingId);
+        const content = document.getElementById(contentId);
+        loading.style.display = 'block';
+        content.innerHTML = '';
+        try {
+            const data = await handleResponse(await fetch(url));
+            loading.style.display = 'none';
+            const html = await renderFn(data);
+            content.innerHTML = html || `<div class="empty">${emptyMsg}</div>`;
+        } catch (e) {
+            loading.style.display = 'none';
+            content.innerHTML = `<div class="empty">✗ Fehler: ${escapeHtml(e.message)}</div>`;
+        }
+    }
+
+    // ============================================================
+    // TAB NAVIGATION
+    // ============================================================
+
+    function switchTab(event, tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if (tabName === 'kafka') {
+            loadProducerData();
+            checkKafkaHealth();
+            loadKafkaTopics();
+            loadConsumerGroups();
+            startProducerStatusPolling();
+        } else if (tabName === 'manage') {
+            refreshAlgorithmsNow();
+            stopProducerStatusPolling();
+        } else if (tabName === 'results') {
+            loadResultsTree();
+            stopProducerStatusPolling();
+        } else {
+            stopProducerStatusPolling();
+        }
+    }
+
+    // ============================================================
+    // UPLOAD HANDLERS
+    // ============================================================
+
+    function uploadJar(e) {
+        return uploadFile(e, {
+            idField: 'algorithmIdJar', fileField: 'jarFile',
+            endpoint: 'upload-jar', messageDiv: 'uploadJarMessage',
+            formId: 'uploadJarForm', btnId: 'uploadJarBtn', fileParam: 'jar'
+        });
+    }
+
+    function uploadConfig(e) {
+        return uploadFile(e, {
+            idField: 'algorithmIdConfig', fileField: 'configFile',
+            endpoint: 'upload-config', messageDiv: 'uploadConfigMessage',
+            formId: 'uploadConfigForm', btnId: 'uploadConfigBtn', fileParam: 'config'
+        });
+    }
+
+    // ============================================================
+    // DELETE HANDLERS
+    // ============================================================
+
+    function deleteJar(id) {
+        return deleteResource(id, {
+            endpoint: '/jar',
+            confirmMsg: n => `JAR von "${n}" wirklich löschen?`,
+            onSuccess: refreshAlgorithmsNow
+        });
+    }
+
+    function deleteAlgorithm(id) {
+        return deleteResource(id, {
+            endpoint: '',
+            confirmMsg: n => `Algorithmus "${n}" komplett löschen (JAR + Config)?`,
+            onSuccess: refreshAlgorithmsNow
+        });
+    }
+
+    // ============================================================
+    // PRODUCER CONTROL
+    // ============================================================
+
+    function setBpfFilter(filter) {
+        document.getElementById('liveBpfFilter').value = filter;
+    }
+
+    async function loadProducerData() {
+        await populateSelect(
+            'liveInterface',
+            `${PRODUCER_API_BASE}/interfaces`,
+            d => d.interfaces.map(i => ({ value: i.name, label: `${i.name} — ${i.description}` }))
+        );
+        await populateSelect(
+            'pcapFile',
+            `${PRODUCER_API_BASE}/files`,
+            d => d.files.map(f => ({ value: f, label: f }))
+        );
+        await updateProducerStatus();
+    }
+
+    async function updateProducerStatus() {
+        try {
+            const data = await handleResponse(await fetch(`${PRODUCER_API_BASE}/status`));
+            const statusEl  = document.getElementById('producerStatusText');
+            const details   = document.getElementById('producerDetails');
+            const statusBox = document.getElementById('producerStatusBox');
+            const stopBtn   = document.getElementById('btnStopProducer');
+            const startLive = document.getElementById('btnStartLive');
+            const startFile = document.getElementById('btnStartFile');
+
+            if (data.running) {
+                statusEl.textContent = 'Läuft';
+                statusBox.classList.add('running');
+                details.style.display = 'block';
+                document.getElementById('producerMode').textContent   = data.mode   || '-';
+                document.getElementById('producerSource').textContent = data.source || '-';
+                document.getElementById('producerTopic').textContent  = data.topic  || '-';
+
+                const filterRow = document.getElementById('producerFilterRow');
+                if (data.filter) {
+                    document.getElementById('producerFilter').textContent = data.filter;
+                    filterRow.style.display = 'block';
+                } else {
+                    filterRow.style.display = 'none';
+                }
+
+                stopBtn.style.display   = 'inline-block';
+                startLive.disabled      = true;
+                startFile.disabled      = true;
+            } else {
+                statusEl.textContent = '⚫ Gestoppt';
+                statusBox.classList.remove('running');
+                details.style.display  = 'none';
+                stopBtn.style.display  = 'none';
+                startLive.disabled     = false;
+                startFile.disabled     = false;
+            }
+        } catch (e) {
+            console.error('Producer status error:', e);
+        }
+    }
+
+    function startProducerStatusPolling() {
+        if (producerStatusInterval) return;
+        producerStatusInterval = setInterval(updateProducerStatus, 2000);
+    }
+
+    function stopProducerStatusPolling() {
+        if (producerStatusInterval) {
+            clearInterval(producerStatusInterval);
+            producerStatusInterval = null;
+        }
+    }
+
+    async function startLiveCapture() {
+        const interfaceName = document.getElementById('liveInterface').value;
+        const topic         = document.getElementById('liveTopic').value.trim();
+        const bpfFilter     = document.getElementById('liveBpfFilter').value.trim();
+        const msg           = document.getElementById('producerStatusMessage');
+
+        if (!interfaceName || !topic) {
+            showMessage(msg, 'Bitte Interface und Topic auswählen', 'error');
+            return;
+        }
+
+        try {
+            const body = { interface: interfaceName, topic };
+            if (bpfFilter) body.bpfFilter = bpfFilter;
+
+            const result = await handleResponse(await fetch(
+                `${PRODUCER_API_BASE}/start-live`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+            ));
+
+            let message = `✓ Live Capture gestartet auf ${escapeHtml(interfaceName)}`;
+            if (result.filter) message += ` mit Filter: <code>${escapeHtml(result.filter)}</code>`;
+            showMessage(msg, message, 'success');
+            await updateProducerStatus();
+        } catch (e) {
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    async function startFileProduction() {
+        const file       = document.getElementById('pcapFile').value;
+        const topic      = document.getElementById('fileTopic').value.trim();
+        const maxPackets = parseInt(document.getElementById('maxPackets').value) || 0;
+        const msg        = document.getElementById('producerStatusMessage');
+
+        if (!file || !topic) {
+            showMessage(msg, 'Bitte Datei und Topic auswählen', 'error');
+            return;
+        }
+
+        try {
+            await handleResponse(await fetch(
+                `${PRODUCER_API_BASE}/start-file`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file, topic, maxPackets }) }
+            ));
+            showMessage(msg, `✓ File Production gestartet: <code>${escapeHtml(file)}</code>`, 'success');
+            await updateProducerStatus();
+        } catch (e) {
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    async function stopProducer() {
+        const msg = document.getElementById('producerStatusMessage');
+        try {
+            await handleResponse(await fetch(`${PRODUCER_API_BASE}/stop`, { method: 'POST' }));
+            showMessage(msg, '✓ Producer gestoppt', 'success');
+            await updateProducerStatus();
+        } catch (e) {
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    // ============================================================
+    // KAFKA HEALTH
+    // ============================================================
+
+    async function checkKafkaHealth() {
+        const msg = document.getElementById('kafkaHealthMessage');
+        try {
+            const data = await handleResponse(await fetch(`${KAFKA_API_BASE}/health`));
+            showMessage(
+                msg,
+                data.kafka ? ' Kafka verbunden' : 'Kafka nicht verbunden',
+                data.kafka ? 'success' : 'error'
+            );
+        } catch (e) {
+            showMessage(msg, `✗ Verbindungsfehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    // ============================================================
+    // KAFKA TOPICS
+    // ============================================================
+
+    async function loadKafkaTopics() {
+        await loadList({
+            loadingId: 'kafkaTopicsLoading',
+            contentId: 'kafkaTopicsContent',
+            url: `${KAFKA_API_BASE}/topics`,
+            emptyMsg: 'Keine Topics vorhanden',
+            renderFn: async (data) => {
+                if (!data.topics || data.topics.length === 0) return '';
+                let html = '<table class="table"><thead><tr><th>Topic</th><th style="text-align:center">Messages</th><th>Aktionen</th></tr></thead><tbody>';
+                for (const topic of data.topics) {
+                    const escaped = escapeHtml(topic);
+                    const topicAttr = escapeHtml(topic);
+                    let count = '<span class="spinner"></span>';
+                    try {
+                        const detail = await handleResponse(await fetch(`${KAFKA_API_BASE}/topics/${encodeURIComponent(topic)}`));
+                        count = `<strong>${detail.totalMessages.toLocaleString('de-DE')}</strong>`;
+                    } catch (e) { count = '-'; }
+
+                    html += `<tr>
+                        <td><strong>${escaped}</strong></td>
+                        <td style="text-align:center;color:#10b981">${count}</td>
+                        <td>
+                            <button class="btn-secondary btn-sm" data-topic="${topicAttr}" onclick="showTopicDetails(this.dataset.topic)">Details</button>
+                            <button class="btn-danger btn-sm" data-topic="${topicAttr}" onclick="deleteTopic(this.dataset.topic)">Löschen</button>
+                        </td>
+                    </tr>`;
+                }
+                return html + '</tbody></table>';
+            }
+        });
+    }
+
+    async function createKafkaTopic() {
+        const name              = document.getElementById('newTopicName').value.trim();
+        const partitions        = parseInt(document.getElementById('newTopicPartitions').value);
+        const replicationFactor = parseInt(document.getElementById('newTopicReplication').value);
+        const msg               = document.getElementById('kafkaTopicsMessage');
+
+        if (!name) { showMessage(msg, 'Bitte Topic-Namen eingeben', 'error'); return; }
+
+        try {
+            await handleResponse(await fetch(`${KAFKA_API_BASE}/topics`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, partitions, replicationFactor })
+            }));
+            showMessage(msg, `✓ Topic "${escapeHtml(name)}" erstellt`, 'success');
+            togglePanel('createTopicPanel');
+            document.getElementById('newTopicName').value = '';
+            loadKafkaTopics();
+        } catch (e) {
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    async function showTopicDetails(topicName) {
+        try {
+            const data = await handleResponse(await fetch(`${KAFKA_API_BASE}/topics/${encodeURIComponent(topicName)}`));
+            const fmt  = n => (n || 0).toLocaleString('de-DE');
+
+            let partTable = '';
+            if (data.partitionDetails && data.partitionDetails.length > 0) {
+                partTable = `
+                    <h3 style="margin-top:20px;margin-bottom:10px;">Partition Details</h3>
+                    <table class="table">
+                        <thead><tr>
+                            <th>Partition</th><th>Leader</th>
+                            <th style="text-align:right">Messages</th>
+                            <th style="text-align:right">Begin Offset</th>
+                            <th style="text-align:right">End Offset</th>
+                        </tr></thead>
+                        <tbody>
+                `;
+                data.partitionDetails.forEach(p => {
+                    partTable += `<tr>
+                        <td>${escapeHtml(p.partition)}</td>
+                        <td>${escapeHtml(p.leader)}</td>
+                        <td style="text-align:right;font-weight:600;color:#0066cc">${fmt(p.messages)}</td>
+                        <td style="text-align:right;color:#888">${fmt(p.beginOffset)}</td>
+                        <td style="text-align:right;color:#888">${fmt(p.endOffset)}</td>
+                    </tr>`;
+                });
+                partTable += '</tbody></table>';
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Topic: ${escapeHtml(data.name)}</h2>
+                    <div class="modal-grid">
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Topic Name</div>
+                            <div class="modal-stat-value">${escapeHtml(data.name)}</div>
+                        </div>
+                        <div class="modal-stat highlight">
+                            <div class="modal-stat-label">Total Messages</div>
+                            <div class="modal-stat-value">${fmt(data.totalMessages)}</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Partitions</div>
+                            <div class="modal-stat-value">${escapeHtml(data.partitions)}</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Replication Factor</div>
+                            <div class="modal-stat-value">${escapeHtml(data.replicationFactor)}</div>
+                        </div>
+                    </div>
+                    ${partTable}
+                    <div style="margin-top:20px;text-align:right;">
+                        <button class="btn-danger" onclick="this.closest('.modal').remove(); deleteConsumerGroup('${escapeHtml(data.groupId)}')">Löschen</button>
+                         <button class="btn-secondary" onclick="this.closest('.modal').remove()">Schließen</button>
+                    </div>
+                </div>
+            `;
+            modal.onclick = e => { if (e.target === modal) modal.remove(); };
+            document.body.appendChild(modal);
+        } catch (e) {
+            alert(`Fehler: ${e.message}`);
+        }
+    }
+
+    async function deleteTopic(topicName) {
+        if (!confirm(`Topic "${topicName}" wirklich löschen?`)) return;
+        const msg = document.getElementById('kafkaTopicsMessage');
+        try {
+            await handleResponse(await fetch(`${KAFKA_API_BASE}/topics/${encodeURIComponent(topicName)}`, { method: 'DELETE' }));
+            showMessage(msg, `✓ Topic "${escapeHtml(topicName)}" gelöscht`, 'success');
+            loadKafkaTopics();
+        } catch (e) {
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    // ============================================================
+    // CONSUMER GROUPS
+    // ============================================================
+
+    async function loadConsumerGroups() {
+        await loadList({
+            loadingId: 'consumerGroupsLoading',
+            contentId: 'consumerGroupsContent',
+            url: `${KAFKA_API_BASE}/consumer-groups`,
+            emptyMsg: 'Keine Consumer Groups vorhanden',
+            renderFn: (data) => {
+                if (!data.groups || data.groups.length === 0) return '';
+                let html = '<table class="table"><thead><tr><th>Group ID</th><th>Aktionen</th></tr></thead><tbody>';
+                data.groups.forEach(group => {
+                    html += `<tr>
+                        <td><code>${escapeHtml(group)}</code></td>
+                        <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="btn-secondary btn-sm" data-group="${escapeHtml(group)}" onclick="showConsumerGroupDetails(this.dataset.group)">Details</button>
+                        <button class="btn-danger btn-sm" data-group="${escapeHtml(group)}" onclick="deleteConsumerGroup(this.dataset.group)">Löschen</button>
+        </td>
+    </tr>`;
+                });
+                return html + '</tbody></table>';
+            }
+        });
+    }
+
+    async function showConsumerGroupDetails(groupId) {
+        try {
+            const data = await handleResponse(await fetch(`${KAFKA_API_BASE}/consumer-groups/${encodeURIComponent(groupId)}`));
+
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Consumer Group</h2>
+                    <div class="modal-grid">
+                        <div class="modal-stat" style="grid-column:span 2">
+                            <div class="modal-stat-label">Group ID</div>
+                            <div class="modal-stat-value" style="font-size:14px;font-family:monospace">${escapeHtml(data.groupId)}</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">State</div>
+                            <div class="modal-stat-value">${escapeHtml(data.state || 'N/A')}</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Members</div>
+                            <div class="modal-stat-value">${escapeHtml(data.members || 0)}</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <button class="btn-secondary" onclick="this.closest('.modal').remove()">Schließen</button>
+                    </div>
+                </div>
+            `;
+            modal.onclick = e => { if (e.target === modal) modal.remove(); };
+            document.body.appendChild(modal);
+        } catch (e) {
+            alert(`Fehler: ${e.message}`);
+        }
+    }
+
+    async function deleteConsumerGroup(groupId) {
+    if (!confirm(`Consumer Group "${groupId}" wirklich löschen?\n\nHinweis: Die Gruppe muss inaktiv (EMPTY) sein. Aktive Flink-Jobs müssen vorher gecancelt werden.`)) return;
+    const msg = document.getElementById('consumerGroupsContent');
+    try {
+        await handleResponse(await fetch(`${KAFKA_API_BASE}/consumer-groups/${encodeURIComponent(groupId)}`, { method: 'DELETE' }));
+        showMessage('kafkaHealthMessage', `Consumer Group <code>${escapeHtml(groupId)}</code> gelöscht`, 'success');
+        loadConsumerGroups();
+    } catch (e) {
+        // Häufigster Fehler: Gruppe ist noch aktiv (STABLE state)
+        showMessage('kafkaHealthMessage', `Fehler: ${escapeHtml(e.message)} - Ist der Flink-Job bereits gecancelt?`, 'error');
+    }
+}
+
+    // ============================================================
+    // ALGORITHMS
+    // ============================================================
+
+    async function refreshAlgorithmsNow() {
+        await loadList({
+            loadingId: 'algorithmsLoading',
+            contentId: 'algorithmsContent',
+            url: `${API_BASE}/list`,
+            emptyMsg: 'Keine Algorithmen vorhanden',
+            renderFn: (data) => {
+                if (!data.algorithms || data.algorithms.length === 0) return '';
+                let html = '';
+                data.algorithms.forEach(algo => {
+                    const id      = escapeHtml(algo.algorithmId);
+                    const idAttr  = escapeHtml(algo.algorithmId);
+                    const status  = algo.ready
+                        ? '<span class="status-ready">✓ Bereit</span>'
+                        : '<span class="status-incomplete">⚠ Unvollständig</span>';
+                    const jarBadge = algo.hasJar
+                        ? `<span class="badge badge-jar">✓ JAR: ${escapeHtml(algo.jarFile)}</span>`
+                        : '<span class="badge badge-missing">✗ JAR fehlt</span>';
+                    const cfgBadge = algo.hasConfig
+                        ? '<span class="badge badge-config">✓ Config</span>'
+                        : '<span class="badge badge-missing">✗ Config fehlt</span>';
+
+                    html += `
+                        <div class="algo-card">
+                            <div class="algo-card-header">
+                                <span class="algo-id">${id}</span>
+                                ${status}
+                            </div>
+                            <div class="algo-files">${jarBadge} ${cfgBadge}</div>
+                            <div class="algo-actions">
+                                ${algo.ready ? `<button class="btn-success btn-sm" data-id="${idAttr}" onclick="executeQuick(this.dataset.id)">▶ Ausführen</button>` : ''}
+                                <button class="btn-sm" data-id="${idAttr}" onclick="deleteJar(this.dataset.id)">JAR löschen</button>
+                                <button class="btn-danger btn-sm" data-id="${idAttr}" onclick="deleteAlgorithm(this.dataset.id)">Alles löschen</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                return html;
+            }
+        });
+    }
+
+    async function executeQuick(algorithmId) {
+        try {
+            const result = await handleResponse(await fetch(
+                `${API_BASE}/${encodeURIComponent(algorithmId)}/execute`,
+                { method: 'POST' }
+            ));
+            alert(`✓ Job gestartet!\nJob ID: ${result.jobId}`);
+        } catch (e) {
+            alert(`✗ Fehler: ${e.message}`);
+        }
+    }
+
+    // ============================================================
+    // RESULTS TREE
+    // ============================================================
+
+    async function loadResultsTree() {
+        const loading = document.getElementById('resultsLoading');
+        const content = document.getElementById('resultsContent');
+        const msg     = document.getElementById('resultsMessage');
+
+        loading.style.display = 'block';
+        content.innerHTML = '';
+
+        try {
+            const data = await handleResponse(await fetch(`${API_BASE}/results/tree`));
+            loading.style.display = 'none';
+            if (!data.children || data.children.length === 0) {
+                content.innerHTML = '<div class="empty">Keine Ergebnisse vorhanden</div>';
+                return;
+            }
+            content.innerHTML = `<div>${renderTree(data)}</div>`;
+        } catch (e) {
+            loading.style.display = 'none';
+            showMessage(msg, `✗ Fehler: ${escapeHtml(e.message)}`, 'error');
+        }
+    }
+
+    function renderTree(node) {
+        return (node.children || []).map(renderTreeNode).join('');
+    }
+
+    function renderTreeNode(node) {
+        const icon = node.directory ? '+' : '-';
+        const name = escapeHtml(node.name);
+        const meta = node.directory
+            ? `${(node.children || []).length} Einträge`
+            : formatFileSize(node.size || 0);
+
+        let html = `
+            <div class="tree-entry">
+                <div class="tree-entry-name">
+                    <span>${icon}</span>
+                    <span>${name}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="tree-meta">${meta}</span>
+                    ${!node.directory
+                        ? `<button class="btn-secondary btn-sm" data-path="${escapeHtml(node.path || '')}" onclick="downloadResultFile(this.dataset.path)">⬇ Download</button>`
+                        : ''}
+                </div>
+            </div>
+        `;
+
+        if (node.directory && node.children && node.children.length > 0) {
+            html += `<div class="tree-children">${renderTree(node)}</div>`;
+        }
+
+        return html;
+    }
+
+    function downloadResultFile(path) {
+        window.open(`${API_BASE}/results/download?path=${encodeURIComponent(path)}`, '_blank');
+    }
+
+    function formatFileSize(size) {
+        if (size < 1024)             return `${size} B`;
+        if (size < 1024 * 1024)      return `${(size / 1024).toFixed(1)} KB`;
+        if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+        return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+    }
+
+    // ============================================================
+    // INIT & CLEANUP
+    // ============================================================
+
+    window.addEventListener('beforeunload', stopProducerStatusPolling);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set Flink dashboard URL dynamically
+        const flinkUrl = `${window.location.protocol}//${window.location.hostname}:8081`;
+        const flinkLink = document.getElementById('flinkDashboardLink');
+        if (flinkLink) flinkLink.href = flinkUrl;
+
+        // Set OpenObserve URL dynamically
+        const openObserveUrl = `${window.location.protocol}//${window.location.hostname}:5080`;
+        const openObserveLink = document.getElementById('openObserveLink');
+        if (openObserveLink) openObserveLink.href = openObserveUrl;
+
+        // Load algorithms on startup
+        refreshAlgorithmsNow();
+    });
+</script>
+</body>
+</html>

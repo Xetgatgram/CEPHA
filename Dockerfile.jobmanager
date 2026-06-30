@@ -1,0 +1,12 @@
+FROM flink:1.20.3-scala_2.12-java17
+
+# Kopiere die einzelnen Framework Module direkt ins lib/
+COPY flink-processor/target/flink-processor-1.0.0-jar-with-dependencies.jar /opt/flink/lib/
+COPY detection-api/target/detection-api-1.0.0.jar /opt/flink/lib/
+
+# Plugin-Verzeichnis für User JARs vorbereiten
+RUN mkdir -p /opt/flink-plugins && \
+    chmod 755 /opt/flink-plugins
+
+USER flink
+WORKDIR /opt/flink

@@ -1,0 +1,11 @@
+# Dockerfile.fluent-bit
+# Fluent Bit sidecar – ships Flink detection results to OpenObserve.
+# Config is baked in; runtime values are injected via Docker Compose environment.
+
+FROM fluent/fluent-bit:3.2
+
+COPY fluent_bit.conf  /fluent-bit/etc/fluent-bit.conf
+COPY parsers.conf     /fluent-bit/etc/parsers.conf
+
+# Base image entrypoint already calls:
+#   /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf

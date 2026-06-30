@@ -1,0 +1,62 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'flink-jobmanager'
+          scrape_interval: 5s
+          static_configs:
+            - targets: ['${env:JOBMANAGER_HOST}:9249']
+              labels:
+                role: 'jobmanager'
+        - job_name: 'flink-taskmanager-1'
+          scrape_interval: 5s
+          static_configs:
+            - targets: ['${env:TASKMANAGER1_HOST}:9249']
+              labels:
+                role: 'taskmanager'
+                instance: 'tm1'
+        - job_name: 'flink-taskmanager-2'
+          scrape_interval: 5s
+          static_configs:
+            - targets: ['${env:TASKMANAGER2_HOST}:9249']
+              labels:
+                role: 'taskmanager'
+                instance: 'tm2'
+        - job_name: 'flink-taskmanager-3'
+          scrape_interval: 5s
+          static_configs:
+            - targets: ['${env:TASKMANAGER3_HOST}:9249']
+              labels:
+                role: 'taskmanager'
+                instance: 'tm3'
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+  resource:
+    attributes:
+      - key: experiment.taskmanager_count
+        value: "${env:EXPERIMENT_TM_COUNT}"
+        action: insert
+      - key: experiment.window_strategy
+        value: "${env:EXPERIMENT_WINDOW_STRATEGY}"  # pro Run anpassen
+        action: insert
+
+exporters:
+  otlphttp:
+    endpoint: "http://${env:OPENOBSERVE_HOST}:${env:OPENOBSERVE_PORT}/api/${env:OPENOBSERVE_ORG}/"
+    headers:
+      Authorization: "Basic ${env:OPENOBSERVE_AUTH}"
+      stream-name: default
+    tls:
+      insecure: true
+  debug:
+    verbosity: normal
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [batch, resource]
+      exporters: [otlphttp, debug]
