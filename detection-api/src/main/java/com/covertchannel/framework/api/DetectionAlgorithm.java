@@ -34,10 +34,10 @@ public interface DetectionAlgorithm extends Serializable {
 
 
     /**
-     * Process a single network flow.
-     * Called for each flow in the stream.
+     * Process a network flow.
+     * Called for each packet in a Flow.
      * Must be implemented for Per-Packet processing (WindowType.NONE)
-     * Can be implemented for Windowed processing
+     * Must be implemented for Windowed processing with NetworkPacket
      * @param packet  The NetworkPacket flow to analyze
      *
      */
