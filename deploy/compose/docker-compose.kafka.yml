@@ -1,5 +1,5 @@
 # VM2: Kafka + Kafka-Producer
-# Host: 10.10.0.69
+# Host: <KAFKA_IP>
 
 services:
   kafka:
@@ -15,7 +15,7 @@ services:
 
       # Listeners - PLAINTEXT_HOST wird von externen Clients genutzt (andere VMs)
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://10.10.0.69:29092,PLAINTEXT_HOST://10.10.0.69:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://<KAFKA_IP>:29092,PLAINTEXT_HOST://<KAFKA_IP>:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -31,7 +31,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
     volumes:
       - /mnt/data/kafka:/var/lib/kafka/data
-      - ./init-kafka-topics.sh:/init-kafka-topics.sh
+      - ../init-kafka-topics.sh:/init-kafka-topics.sh
 
     command: >
       bash -c "

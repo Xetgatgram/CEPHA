@@ -1,0 +1,62 @@
+---
+- name: Alle Deployments sauber herunterfahren
+  hosts: gesamt
+  become: true
+
+  tasks:
+    - name: Prüfen, ob Projektverzeichnis existiert
+      ansible.builtin.stat:
+        path: "{{ project_dir }}"
+      register: project_dir_stat
+
+    - name: Docker-Compose-Projekt herunterfahren
+      community.docker.docker_compose_v2:
+        project_src: "{{ project_dir }}"
+        state: absent
+        remove_volumes: true
+        remove_orphans: true
+      when: project_dir_stat.stat.exists
+
+    - name: Verbleibende laufende Container ermitteln
+      ansible.builtin.command: docker ps -q
+      register: running_containers
+      changed_when: false
+      failed_when: false
+
+    - name: Verbleibende Container stoppen
+      ansible.builtin.command: docker stop {{ running_containers.stdout_lines | join(' ') }}
+      when: running_containers.stdout_lines | length > 0
+      failed_when: false
+
+    - name: Docker-Infos sammeln
+      community.docker.docker_host_info:
+        images: yes
+        containers: yes
+      register: docker_info
+
+    - name: Alle Container entfernen
+      community.docker.docker_container:
+        name: "{{ item.Id }}"
+        state: absent
+        force_kill: yes
+      loop: "{{ docker_info.containers }}"
+
+    - name: Alle Images entfernen
+      community.docker.docker_image:
+        name: "{{ item.RepoTags | first }}"
+        state: absent
+        force_absent: yes
+      loop: "{{ docker_info.images }}"
+      when: item.RepoTags | length > 0
+
+
+#    - name: Docker-Service stoppen
+#      ansible.builtin.service:
+#        name: docker
+#        state: stopped
+#
+#    - name: Docker-Socket stoppen
+#      ansible.builtin.service:
+#        name: docker.socket
+#        state: stopped
+#      ignore_errors: true

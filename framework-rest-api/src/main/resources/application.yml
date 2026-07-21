@@ -1,0 +1,71 @@
+# ============================================================================
+# Covert Channel Framework - REST API Configuration
+# Spring Boot 3.x with Environment Variables Only
+# ============================================================================
+
+spring:
+  application:
+    name: covert-channel-framework-rest-api
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# ============================================================================
+# Kafka Configuration
+# ============================================================================
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAPSERVERS:kafka:29092}
+  admin:
+    auto-create-topics: ${KAFKA_ADMIN_AUTO_CREATE_TOPICS:true}
+  producer:
+    pcap-upload-dir: ${KAFKA_PRODUCER_PCAP_UPLOAD_DIR:/tmp/pcap-uploads}
+
+
+# ============================================================================
+# Flink Cluster Configuration
+# ============================================================================
+flink:
+  cluster:
+    host: ${FLINK_HOST:localhost}
+    port: ${FLINK_PORT:8081}
+    rpc-port: ${FLINK_RPC_PORT:6123}
+    timeout-ms: ${FLINK_TIMEOUT_MS:60000}
+
+# ============================================================================
+# Plugin/JAR Storage Configuration
+# ============================================================================
+plugin:
+  storage:
+    dir: ${PLUGIN_STORAGE_DIR:/opt/flink-plugins}
+    max-jar-size-mb: ${PLUGIN_MAX_JAR_SIZE_MB:500}
+
+results-storage-dir: ${RESULTS_STORAGE_DIR:/opt/flink/results}
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    com.covertchannel: ${LOGGING_LEVEL_APP:INFO}
+    org.springframework.web: ${LOGGING_LEVEL_WEB:INFO}
+    org.apache.flink: ${LOGGING_LEVEL_FLINK:DEBUG}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# ============================================================================
+# Framework Properties
+# ============================================================================
+framework:
+  version: 1.0.0
+  deployment:
+    mode: ${DEPLOYMENT_MODE:docker}
+  cache:
+    enabled: ${CACHE_ENABLED:true}
+    ttl-minutes: ${CACHE_TTL_MINUTES:30}

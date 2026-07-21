@@ -1,0 +1,11 @@
+{
+  "algorithmClassName": "com.covertchannel.algorithm.detector.CompressibilityDetectorCabukOptimized",
+  "algorithmId": "cabuk-v1",
+  "inputTopic": "network-flows",
+  "kafkaBrokers": "kafka:29092",
+  "outputTopic": "detection-results",
+  "parallelism": 8,
+  "slideMs": 1000,
+  "windowSizeMs": 60000,
+  "windowType": "session"
+}

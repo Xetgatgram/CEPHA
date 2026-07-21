@@ -1,0 +1,19 @@
+# Vorlage fuer group_vars/vault.yml
+#
+# Die echte vault.yml wird NICHT mit ausgeliefert/committet - sie ist
+# projektspezifisch und mit einem Ansible-Vault-Passwort verschluesselt,
+# das nur die jeweiligen Betreiber kennen. Wer dieses Projekt neu deployt,
+# muss sich eine eigene vault.yml mit eigenen Secrets anlegen:
+#
+#   1. Diese Datei nach group_vars/vault.yml kopieren
+#   2. CHANGEME-Werte durch echte Secrets ersetzen
+#   3. Verschluesseln:
+#        ansible-vault encrypt group_vars/vault.yml
+#      (fragt interaktiv nach einem neuen Vault-Passwort)
+#   4. Das gewaehlte Vault-Passwort in ~/.ansible/vault_pass ablegen
+#      (Pfad ist in ansible.cfg unter vault_password_file konfiguriert)
+#
+# Alternativ direkt verschluesselt anlegen, ohne Klartext-Zwischenschritt:
+#   ansible-vault create group_vars/vault.yml
+
+vault_openobserve_password: "CHANGEME"

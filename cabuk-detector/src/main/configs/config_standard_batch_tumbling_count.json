@@ -1,0 +1,15 @@
+{
+  "algorithmClassName": "com.covertchannel.algorithm.detector.CabukCompressibilityDetector",
+  "algorithmId": "standardBatchTumblingCount2000",
+  "inputTopic": "network-flows",
+  "outputTopic": "detection-results",
+  "parallelism": 8,
+  "executionMode": "BATCH",
+  "windowType": "tumbling_count",
+  "windowCount": 2000,
+  "slideCount": 0,
+  "iatThresholdMs":1000.0,
+  "precision":2,
+  "anomalyThreshold":0.7,
+  "minIats":5
+}

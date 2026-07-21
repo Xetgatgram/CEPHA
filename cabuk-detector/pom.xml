@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.covertchannel</groupId>
+    <artifactId>cabuk-detector</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Cabuk Covert Channel Detector</name>
+    <description>Compressibility based detector - Independent plugin for detection framework</description>
+
+    <!-- ========================================
+         KEINE PARENT POM!
+         cabuk-detector ist VOLLSTÄNDIG UNABHÄNGIG
+         ======================================== -->
+
+    <properties>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- ========================================
+         MINIMALE DEPENDENCIES
+         NUR detection-api + Logging
+         ======================================== -->
+    <dependencies>
+        <!-- detection-api: PROVIDED - will be available in Flink runtime -->
+        <dependency>
+            <groupId>com.covertchannel</groupId>
+            <artifactId>detection-api</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- pcap4j: PROVIDED - will be available in Flink runtime -->
+        <dependency>
+            <groupId>org.pcap4j</groupId>
+            <artifactId>pcap4j-core</artifactId>
+            <version>1.8.2</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.pcap4j</groupId>
+            <artifactId>pcap4j-packetfactory-static</artifactId>
+            <version>1.8.2</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Logging: PROVIDED - will be available in Flink runtime -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.7</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.11</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.9.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.9.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ========================================
+         BUILD - Alle Plugins manuel definiert
+         ======================================== -->
+    <build>
+        <plugins>
+            <!-- Compiler Configuration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- JAR Plugin: Configured to create multiple JARs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <!-- JAR 1: Contains only the Standard Detector -->
+                    <execution>
+                        <id>package-standard</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>standard</classifier> <!-- Result: cabuk-detector-1.0.0-standard.jar -->
+                            <includes>
+                                <include>com/covertchannel/algorithm/detector/CabukCompressibilityDetector.class</include>
+                                <!-- Include inner classes (like $1.class) if they exist -->
+                                <include>com/covertchannel/algorithm/detector/CabukCompressibilityDetector*.class</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+
+                    <!-- JAR 2: Contains only the Optimized Detector -->
+                    <execution>
+                        <id>package-incremental</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>incremental</classifier> <!-- Result: cabuk-detector-1.0.0-optimized.jar -->
+                            <includes>
+                                <include>com/covertchannel/algorithm/detector/CabukCompressibilityDetectorIncremental.class</include>
+                                <include>com/covertchannel/algorithm/detector/CabukCompressibilityDetectorIncremental*.class</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

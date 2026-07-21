@@ -15,7 +15,7 @@ services:
       - fluent_bit_db:/var/fluent-bit
 
   taskmanager:
-    image: ghcr.io/xetgatgram/cepha-manager:26.6.1
+    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
     container_name: flink-taskmanager
     command: taskmanager
     user: "9999:9999"
@@ -28,7 +28,7 @@ services:
       JOB_MANAGER_RPC_ADDRESS: "${JOBMANAGER_HOST}"
 
       FLINK_PROPERTIES: |
-        # Verbindung 
+        # ── Verbindung ───────────────────────────────────────────────
           jobmanager.rpc.address: ${JOBMANAGER_HOST}
           jobmanager.rpc.port: 6123
           taskmanager.bind-host: 0.0.0.0
@@ -36,10 +36,10 @@ services:
           taskmanager.rpc.port: 6122
           taskmanager.data.port: 6121
 
-          # Slots 
+          # ── Slots ────────────────────────────────────────────────────
           taskmanager.numberOfTaskSlots: 4
 
-          # Memory 
+          # ── Memory ───────────────────────────────────────────────────
           # Nur process.size + managed.size explizit. Flink berechnet
           # alles andere automatisch und konsistent.
           taskmanager.memory.process.size: 24g
@@ -57,7 +57,7 @@ services:
           taskmanager.memory.jvm-overhead.max: 3g
           taskmanager.memory.jvm-overhead.fraction: 0.1
 
-          # State Backend 
+          # ── State Backend ────────────────────────────────────────────
           state.backend.type: rocksdb
           state.backend.rocksdb.memory.managed: true
           state.backend.rocksdb.memory.fixed-per-slot: true
@@ -65,30 +65,30 @@ services:
           state.backend.rocksdb.timer-service.factory: heap
           state.backend.rocksdb.localdir: ${TASKMANAGER_SPILL_DIR}
 
-          #  Spilling / Temp 
+          # ── Spilling / Temp ──────────────────────────────────────────
           io.tmp.dirs: ${TASKMANAGER_SPILL_DIR}
           taskmanager.working-dir: ${TASKMANAGER_SPILL_DIR}
           taskmanager.runtime.sort-in-batch: true
 
-          # Checkpointing 
+          # ── Checkpointing ────────────────────────────────────────────
           execution.checkpointing.interval: 120000
           execution.checkpointing.min-pause: 30000
           execution.checkpointing.timeout: 300000
           execution.checkpointing.mode: AT_LEAST_ONCE
           execution.checkpointing.num-retained: 2
 
-          # RPC 
+          # ── RPC ──────────────────────────────────────────────────────
           pekko.framesize: 64m
           pekko.remote.netty.tcp.port: 0
 
-          # JVM GC 
+          # ── JVM GC ───────────────────────────────────────────────────
           env.java.opts.taskmanager: -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:G1HeapRegionSize=16m -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
 
-          # Metriken 
+          # ── Metriken ─────────────────────────────────────────────────
           metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
           metrics.reporter.prom.port: 9249
           metrics.internal.query-service.port: 6125
-          # Heartbeat & Timeout 
+          # --- Heartbeat & Timeout ---
           heartbeat.interval: 10000
           heartbeat.timeout: 120000
           heartbeat.rpc-failure-threshold: 5
@@ -103,7 +103,7 @@ services:
     restart: on-failure
 
   fluent-bit:
-    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.6.1
+    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.30
     container_name: fluent-bit
     volumes:
       - flink_results:/opt/flink/results:ro

@@ -14,7 +14,7 @@ services:
       - fluent_bit_db:/var/fluent-bit
   # Flink JobManager
   jobmanager:
-    image: ghcr.io/xetgatgram/cepha-manager:26.6.1
+    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
     container_name: flink-jobmanager
     command: jobmanager
     user: "9999:9999"
@@ -65,7 +65,7 @@ services:
   # REST API
 
   framework:
-    image: ghcr.io/xetgatgram/cepha-rest:26.6.1
+    image: ghcr.io/xetgatgram/cepha-rest:26.05.38
     container_name: framework-rest-api
     ports:
       - "8080:8080"
@@ -83,7 +83,7 @@ services:
       kafka.producer.pcap-upload-dir: /pcap-files
       #O Output-File Config
       CEPHA_OUTPUT_PATH: /opt/flink/results
-      CEPHA_DLQ_PATH: /opt/flink/results/dlq
+      CEPHA_DLQ_PATH: /opt/flink/dlq
     volumes:
       - plugin_storage:/opt/flink-plugins
       - pcap_uploads:/tmp/pcap-uploads
@@ -110,7 +110,7 @@ services:
       - "4318:4318"   # OTLP HTTP
       - "8889:8888"   # Prometheus metrics
     volumes:
-      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
+      - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
     environment:
       # Base64-kodierter Auth-Header wird automatisch berechnet
         JOBMANAGER_HOST: "${JOBMANAGER_HOST}"
@@ -153,7 +153,7 @@ services:
 
   # Fluent Bit (liest lokale Jobmanager-Ergebnisse)
   fluent-bit:
-    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.6.1
+    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.30
     container_name: fluent-bit
     volumes:
       - flink_results:/opt/flink/results:ro

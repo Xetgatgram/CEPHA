@@ -1,0 +1,35 @@
+images:
+  - name: "jobmanager"
+    source: "{{ ghcr_registry }}/cepha-manager:26.05.33"
+    target: "jobmanager:latest"
+  - name: "framework"
+    source: "{{ ghcr_registry }}/cepha-rest:26.05.33"
+    target: "framework:latest"
+  - name: "openobserve"
+    source: "public.ecr.aws/zinclabs/openobserve:latest"
+    target: "openobserve:latest"
+  - name: "fluent-bit"
+    source: "{{ ghcr_registry }}/cepha-fluent-bit:26.05.11"
+    target: "fluent-bit:latest"
+  - name: "busybox"
+    source: "docker.io/library/busybox:latest"
+    target: "busybox:latest"
+  - name: "otel-collector"
+    source: "docker.io/otel/opentelemetry-collector-contrib:latest"
+    target: "otel/opentelemetry-collector-contrib:latest"
+
+# Ports die nach außen freigegeben werden müssen
+exposed_ports:
+  flink_ui:      8081
+  flink_rpc:     6123
+  rest_api:      8080
+  metrics_jm:    9249
+
+compose:
+  project_name: "{{ project_name }}-jobmanager"
+  file: "docker-compose.jobmanager.yml"
+
+flink:
+  jobmanager_rpc_address: "{{ ansible_host }}"
+  jobmanager_rpc_port: 6123
+  metrics_port: 9249

@@ -4,8 +4,8 @@
 
 FROM fluent/fluent-bit:3.2
 
-COPY fluent_bit.conf  /fluent-bit/etc/fluent-bit.conf
-COPY parsers.conf     /fluent-bit/etc/parsers.conf
+COPY deploy/observability/fluent_bit.conf  /fluent-bit/etc/fluent-bit.conf
+COPY deploy/observability/parsers.conf     /fluent-bit/etc/parsers.conf
 
 # Base image entrypoint already calls:
 #   /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf

@@ -1,0 +1,22 @@
+images:
+  - name: "kafka"
+    source: "confluentinc/cp-kafka:7.5.0"
+    target: "kafka:latest"
+
+
+exposed_ports:
+  kafka_external:   9092
+  kafka_internal:   29092
+  kafka_controller: 29093
+
+compose:
+  project_name: "{{ project_name }}-kafka"
+  file: "docker-compose.kafka.yml"
+
+kafka:
+  cluster_id: "4L6g3nShT-eMCtK--X86sw"
+  log_retention_hours: -1
+  topics:
+    - name: "network-flows"
+      partitions: 32 # one Partition for every Flink Taskslot at least.
+      replication_factor: 1

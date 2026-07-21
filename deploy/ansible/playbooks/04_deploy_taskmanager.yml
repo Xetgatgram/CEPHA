@@ -1,0 +1,55 @@
+---
+- name: Taskmanager + Fluent Bit
+  hosts: taskmanager
+  become: true
+
+  vars_files:
+    - ../inventories/cloud_vms/group_vars/vault.yml
+
+  tasks:
+
+    # ── Verzeichnisse ────────────────────────────────────────
+    - name: Projektverzeichnis anlegen
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    # Konfig-dateien
+    - name: Docker-Compose-Datei übertragen
+      ansible.builtin.copy:
+        src: "../../compose/docker-compose.taskmanager.yml"
+        dest: "{{ project_dir }}/docker-compose.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+# ! Change TASKMANAGER_SPILL_DIR to existing folder/storage
+    - name: .env-Datei erstellen
+      ansible.builtin.copy:
+        content: |
+          JOBMANAGER_HOST={{ vm_ips.jobmanager }}
+          TASKMANAGER_HOST={{ vm_ips['taskmanager' + (groups['taskmanager'].index(inventory_hostname) + 1)|string] }}
+          TASKMANAGER_SPILL_DIR={{ ['/mnt/data/tm1-spill', '/mnt/data/tm2-spill', '/mnt/data/tm3-spill'][groups['taskmanager'].index(inventory_hostname)] }}
+          OPENOBSERVE_HOST={{ vm_ips.jobmanager }}
+          OPENOBSERVE_PORT={{ openobserve_port }}
+          OPENOBSERVE_USER={{ openobserve_user }}
+          OPENOBSERVE_PASSWORD={{ openobserve_password }}
+          OPENOBSERVE_ORG={{ openobserve_org }}
+          OPENOBSERVE_STREAM={{ openobserve_stream }}
+        dest: "{{ project_dir }}/.env"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+
+    - name: Images von ghcr.io pullen
+      community.docker.docker_image:
+        name: "{{ item.source }}"
+        source: pull
+        force_source: true
+      loop: "{{ images }}"
+      #delegate_to: localhost
+      #become: false

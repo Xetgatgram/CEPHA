@@ -1,0 +1,11 @@
+{
+  "algorithmClassName": "com.covertchannel.algorithm.detector.CabukCompressibilityDetectorIncremental",
+  "algorithmId": "advanced",
+  "inputTopic": "network-flows",
+  "outputTopic": "detection-results",
+  "parallelism": 8,
+  "executionMode": "BATCH",
+  "windowType": "tumbling_count",
+  "windowCount": 2000,
+  "slideCount": 0
+}

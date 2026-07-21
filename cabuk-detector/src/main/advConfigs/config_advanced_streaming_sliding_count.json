@@ -1,0 +1,12 @@
+{
+  "algorithmClassName": "com.covertchannel.algorithm.detector.CabukCompressibilityDetectorIncremental",
+  "algorithmId": "advanced",
+  "inputTopic": "network-flows",
+  "kafkaBrokers": "10.10.0.69:9092",
+  "outputTopic": "detection-results",
+  "parallelism": 4,
+  "executionMode": "STREAMING",
+  "windowType": "sliding_count",
+  "windowCount": 2000,
+  "slideCount": 500
+}

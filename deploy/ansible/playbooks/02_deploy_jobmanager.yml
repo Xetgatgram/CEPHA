@@ -1,0 +1,84 @@
+---
+- name: (JobManager + REST-API + Monitoring)
+  hosts: jobmanager
+  become: true
+
+  vars_files:
+    - ../inventories/cloud_vms/group_vars/vault.yml
+
+  tasks:
+
+    # Ordner
+    - name: Projektordner anlegen
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Unterordner anlegen
+      ansible.builtin.file:
+        path: "{{ project_dir }}/{{ item }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+      loop:
+        - results
+        - images
+
+    # Konfig-dateien
+    - name: Docker-Compose übertragen
+      ansible.builtin.copy:
+        src: "../../compose/docker-compose.jobmanager.yml"
+        dest: "{{ project_dir }}/docker-compose.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Konfig-dateien übertragen
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ project_dir }}/{{ item.dest }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+      loop:
+        - { src: "../../observability/otel-collector-config.yml",  dest: "otel-collector-config.yml" }
+
+    - name: .env-Datei erstellen
+      ansible.builtin.copy:
+        content: |
+          JOBMANAGER_HOST={{ vm_ips.jobmanager }}
+          KAFKA_BOOTSTRAPSERVERS={{ vm_ips.kafka }}
+          TASKMANAGER1_HOST={{ vm_ips.taskmanager1 }}
+          TASKMANAGER2_HOST={{ vm_ips.taskmanager2 }}
+          TASKMANAGER3_HOST={{ vm_ips.taskmanager3 }}
+          OPENOBSERVE_USER={{ openobserve_user }}
+          OPENOBSERVE_PASSWORD={{ openobserve_password }}
+          OPENOBSERVE_ORG={{ openobserve_org }}
+          OPENOBSERVE_STREAM={{ openobserve_stream }}
+          OPENOBSERVE_AUTH={{ (openobserve_user ~ ':' ~ openobserve_password) | b64encode }}
+        dest: "{{ project_dir }}/.env"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    - name: Images von ghcr.io pullen
+      community.docker.docker_image:
+        name: "{{ item.source }}"
+        source: pull
+        force_source: true
+      loop: "{{ images }}"
+      #delegate_to: localhost
+      #become: false
+
+
+
+#    # starten
+#    - name: Docker Compose starten
+#      community.docker.docker_compose_v2:
+#        project_src: "{{ project_dir }}"
+#        state: present
+#        pull: never

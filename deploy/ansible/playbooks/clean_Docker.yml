@@ -1,0 +1,29 @@
+---
+- name: Docker Cleanup auf allen VMs
+  hosts: gesamt
+  become: true
+
+  tasks:
+
+    - name: Alle Container stoppen
+      shell: |
+        docker ps -q | xargs -r docker stop
+      ignore_errors: true
+
+    - name: Alle Container entfernen
+      shell: |
+        docker ps -aq | xargs -r docker rm -f
+      ignore_errors: true
+
+    - name: Alle Docker-Netzwerke entfernen
+      shell: |
+        docker network ls --filter type=custom -q | xargs -r docker network rm
+      ignore_errors: true
+
+    - name: Status prüfen
+      shell: docker ps -a
+      register: docker_status
+
+    - name: Ergebnis ausgeben
+      debug:
+        msg: "{{ docker_status.stdout_lines }}"

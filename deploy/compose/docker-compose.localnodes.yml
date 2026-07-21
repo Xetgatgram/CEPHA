@@ -1,16 +1,8 @@
 # =============================================================================
 # Lokales Test-Deployment – simuliert 5 VMs auf einer Maschine
-# Start: docker compose -f docker-compose.localnodes.yml -p cepha up -d
-#
-# Stand: 2026-06-30
-# Aenderungen ggü. Vorversion:
-#   1. State-Backend auf HashMap umgestellt (lokal STREAMING/REPLAY) – RocksDB entfernt
-#   2. Fluent-Bit-tm1: eigenes DB-Volume auf /var/fluent-bit (sauberes Resume)
-#   3. Fluent-Bit-jm auskommentiert (JobManager schreibt keine Ergebnisse)
-#   4. Kafka: init-kafka-topics.sh als relativer Pfad (auslieferbar)
-#   5. Docker-Log-Rotation erfolgt global über /etc/docker/daemon.json (nicht hier)
+# Start: docker compose -f docker-compose.localnodes.yml up -d
 # =============================================================================
-x-openobserve: &openobserve-credentials   # zentrale Credentials
+x-openobserve: &openobserve-credentials          # zentrale Credentials
   OPENOBSERVE_HOST: openobserve
   OPENOBSERVE_PORT: "5080"
   OPENOBSERVE_ORG: cepha
@@ -18,9 +10,10 @@ x-openobserve: &openobserve-credentials   # zentrale Credentials
   OPENOBSERVE_USER: admin@admin.local
   OPENOBSERVE_PASSWORD: admin
 
+
 services:
 
-  # ===== Jobmanager + Monitoring =====
+  # =====Jobmanager + Monitoring ====
 
   flink-volume-init:
     image: busybox
@@ -28,21 +21,19 @@ services:
     command: sh -c "
       mkdir -p /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq &&
       chown -R 9999:9999 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq &&
-      chmod -R 777 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq &&
-      mkdir -p /var/fluent-bit-tm1 && chmod 777 /var/fluent-bit-tm1"
+      chmod -R 777 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq"
     volumes:
-      - flink_results_jm:/opt/flink/results-jm
+      - flink_results_jm:/opt/flink/results
       - flink_results_tm1:/opt/flink/results-tm1
       - flink_results_tm2:/opt/flink/results-tm2
       - flink_results_tm3:/opt/flink/results-tm3
       - flink_dlq:/opt/flink/dlq
-      - fluent_bit_db_tm1:/var/fluent-bit-tm1
 
   jobmanager:
-    #image: ghcr.io/xetgatgram/cepha-manager:26.05.38
-    build:
-      context: .
-      dockerfile: Dockerfile.jobmanager
+    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
+   # build:
+    #  context: ../..
+    #  dockerfile: deploy/docker/Dockerfile.jobmanager
     container_name: flink-jobmanager
     command: jobmanager
     user: "9999:9999"
@@ -53,31 +44,18 @@ services:
     environment:
       JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
+        state.backend: rocksdb
+        state.backend.rocksdb.memory.managed: true
+        taskmanager.memory.managed.size: 256mb
+        execution.checkpointing.incremental: true
+        execution.checkpointing.dir: file:///opt/flink/checkpoints
+        state.backend.rocksdb.timer-service.factory: heap
         jobmanager.rpc.address: jobmanager
         jobmanager.bind-host: 0.0.0.0
         jobmanager.rpc.port: 6123
         rest.address: jobmanager
         rest.bind-address: 0.0.0.0
         taskmanager.numberOfTaskSlots: 4
-        # --- State Backend (HashMap, lokal fuer STREAMING/REPLAY) ---
-        state.backend.type: hashmap
-        # --- Managed Memory (moderat, kein festes process.size) ---
-        taskmanager.memory.managed.size: 512mb
-        # --- Checkpointing ---
-        execution.checkpointing.interval: 30000
-        execution.checkpointing.min-pause: 30000
-        execution.checkpointing.timeout: 300000
-        execution.checkpointing.mode: AT_LEAST_ONCE
-        execution.checkpointing.num-retained: 1
-        execution.checkpointing.dir: file:///opt/flink/checkpoints
-        # --- Heartbeat & Timeout ---
-        heartbeat.interval: 10000
-        heartbeat.timeout: 120000
-        heartbeat.rpc-failure-threshold: 5
-        akka.ask.timeout: 120s
-        akka.tcp.timeout: 120s
-        pekko.framesize: 64m
-        # --- Metriken ---
         metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
         metrics.reporter.prom.port: 9249
     volumes:
@@ -98,10 +76,10 @@ services:
     restart: on-failure
 
   framework:
-    #image: ghcr.io/xetgatgram/cepha-rest:26.05.38
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/xetgatgram/cepha-rest:26.05.38
+   # build:
+    #  context: ../..
+    #  dockerfile: deploy/docker/Dockerfile
     container_name: framework-rest-api
     ports:
       - "8080:8080"
@@ -120,7 +98,7 @@ services:
       CEPHA_DLQ_PATH: /opt/flink/dlq
     volumes:
       - plugin_storage:/opt/flink-plugins
-      - ./pcap-files:/pcap-files:ro
+      - /mnt/e/covert-channel-framework/pcap-files:/pcap-files:ro
     depends_on:
       - jobmanager
       - kafka
@@ -141,18 +119,19 @@ services:
       - "4318:4318"   # OTLP HTTP
       - "8889:8888"   # Prometheus metrics
     volumes:
-      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
+      - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
     environment:
+      # Base64-kodierter Auth-Header wird automatisch berechnet
       OPENOBSERVE_AUTH: "YWRtaW5AYWRtaW4ubG9jYWw6YWRtaW4="
       JOBMANAGER_HOST: "jobmanager"
       TASKMANAGER1_HOST: "taskmanager1"
       TASKMANAGER2_HOST: "taskmanager2"
       TASKMANAGER3_HOST: "taskmanager3"
-      OPENOBSERVE_HOST: "openobserve"
+      OPENOBSERVE_HOST: "openobserve"           #
       OPENOBSERVE_PORT: "5080"
       OPENOBSERVE_ORG: "cepha"
-      EXPERIMENT_TM_COUNT: "3"
-      EXPERIMENT_WINDOW_STRATEGY: "tumbling"
+      EXPERIMENT_TM_COUNT: "3"                  #  anpassen
+      EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
     depends_on:
       - openobserve
       - jobmanager
@@ -168,7 +147,7 @@ services:
       - "5080:5080"
     environment:
       ZO_ROOT_USER_EMAIL: admin@admin.local
-      ZO_ROOT_USER_PASSWORD: Cepha26!
+      ZO_ROOT_USER_PASSWORD: admin
       ZO_QUERY_DEFAULT_LIMIT: "1000000000"
       ZO_MAX_DASHBOARD_SERIES: "1000000000"
     volumes:
@@ -177,37 +156,12 @@ services:
       - cepha-network
     restart: always
 
-  # ===== fluent-bit-jm: in diesem Single-Node-Setup nicht nötig =====
-  # (JobManager schreibt keine Ergebnisse). Bei Bedarf wieder einkommentieren
-  # und fluent_bit_db_jm-Volume + Verzeichnis in flink-volume-init reaktivieren.
-  #   fluent-bit-jm:
-  #     #image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.11
-  #     build:
-  #       context: .
-  #       dockerfile: Dockerfile.fluent-bit
-  #     container_name: fluent-bit-jm
-  #     volumes:
-  #       - flink_results_jm:/opt/flink/results:ro
-  #       - fluent_bit_db_jm:/var/fluent-bit
-  #     environment:
-  #       <<: *openobserve-credentials
-  #       FLUENT_BIT_SOURCE: jobmanager
-  #       FLUENT_BIT_DB_NAME: fluent-bit-jobmanager.db
-  #     depends_on:
-  #       flink-volume-init:
-  #         condition: service_completed_successfully
-  #       openobserve:
-  #         condition: service_started
-  #     networks:
-  #       - cepha-network
-  #     restart: always
-
   # ===== Kafka + Producer =====
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
-    user: "0:0"   # root -> auf Testsystem vertretbar
+    user: "0:0" #root -> user:group auf testsystem vertretbar
     ports:
       - "9092:9092"
     environment:
@@ -224,12 +178,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_LOG_RETENTION_HOURS: -1   # Disable log retention Time, never delete
+      KAFKA_LOG_RETENTION_HOURS: -1 # Disable log retention Time, never delete
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
     volumes:
       - /mnt/e/Master_project/kafkaData:/var/lib/kafka/data
-      - ./init-kafka-topics.sh:/init-kafka-topics.sh:ro
+      - ../init-kafka-topics.sh:/init-kafka-topics.sh
     command: >
       bash -c "
       /etc/confluent/docker/run &
@@ -249,10 +203,10 @@ services:
   # ===== Taskmanager 1 =====
 
   taskmanager1:
-    #image: ghcr.io/xetgatgram/cepha-manager:26.05.38
-    build:
-      context: .
-      dockerfile: Dockerfile.jobmanager
+    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
+   # build:
+    #  context: ../..
+   #   dockerfile: deploy/docker/Dockerfile.jobmanager
     container_name: flink-taskmanager-1
     command: taskmanager
     user: "9999:9999"
@@ -262,65 +216,135 @@ services:
       CEPHA_DLQ_PATH: /opt/flink/dlq
       JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
+        state.backend: rocksdb
+        state.backend.rocksdb.memory.managed: true
+        taskmanager.memory.managed.size: 256mb
+        execution.checkpointing.incremental: true
+        execution.checkpointing.dir: file:///opt/flink/checkpoints
+        state.backend.rocksdb.timer-service.factory: heap
         jobmanager.rpc.address: jobmanager
         jobmanager.rpc.port: 6123
         taskmanager.numberOfTaskSlots: 4
         taskmanager.memory.network.fraction: 0.2
-        # --- State Backend (HashMap, lokal fuer STREAMING/REPLAY) ---
-        state.backend.type: hashmap
-        # --- Managed Memory (moderat, kein festes process.size) ---
-        taskmanager.memory.managed.size: 512mb
-        # --- Metaspace (URLClassLoader pro Plugin-JAR) ---
-        taskmanager.memory.jvm-metaspace.size: 512m
-        # --- Checkpointing ---
-        execution.checkpointing.dir: file:///opt/flink/checkpoints
-        # --- Heartbeat & Timeout ---
-        heartbeat.interval: 10000
-        heartbeat.timeout: 120000
-        akka.ask.timeout: 120s
-        akka.tcp.timeout: 120s
-        pekko.framesize: 64m
-        # --- JVM GC ---
-        env.java.opts.taskmanager: -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:G1HeapRegionSize=16m -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
-        # --- Metriken ---
         metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
         metrics.reporter.prom.port: 9249
     volumes:
       - flink_results_tm1:/opt/flink/results
       - flink_dlq:/opt/flink/dlq
     depends_on:
-      jobmanager:
-        condition: service_healthy
+       jobmanager:
+          condition: service_healthy
     networks:
       - cepha-network
     restart: on-failure
 
   fluent-bit-tm1:
-    #image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.11
-    build:
-      context: .
-      dockerfile: Dockerfile.fluent-bit
+    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.11
+    #build:
+     # context: ../..
+     # dockerfile: deploy/docker/Dockerfile.fluent-bit
     container_name: fluent-bit-tm1
     volumes:
       - flink_results_tm1:/opt/flink/results:ro
-      - fluent_bit_db_tm1:/var/fluent-bit
     environment:
       <<: *openobserve-credentials
       FLUENT_BIT_SOURCE: taskmanager
       FLUENT_BIT_DB_NAME: fluent-bit-taskmanager1.db
     depends_on:
-      flink-volume-init:
-        condition: service_completed_successfully
-      openobserve:
-        condition: service_started
+      - openobserve
     networks:
       - cepha-network
     restart: always
 
-  # ===== Taskmanager 2 / 3 (optional, bei Bedarf TM1 kopieren und anpassen) =====
-  # It is most likely better to increase taskmanager.numberOfTaskSlots !!!
-  #
-  # eigene fluent_bit_db_tmX-Volumes ergaenzen und in flink-volume-init anlegen.
+  # ===== Taskmanager 2 =====
+
+#  taskmanager2:
+# #   image: ghcr.io/xetgatgram/cepha-manager:26.04
+#    build:
+#      context: ../..
+#      dockerfile: deploy/docker/Dockerfile.jobmanager
+#    container_name: flink-taskmanager-2
+#    command: taskmanager
+#    user: "9999:9999"
+#    ports:
+#      - "9251:9249"
+#    environment:
+#      JOB_MANAGER_RPC_ADDRESS: jobmanager
+#      FLINK_PROPERTIES: |
+#        jobmanager.rpc.address: jobmanager
+#        jobmanager.rpc.port: 6123
+#        taskmanager.numberOfTaskSlots: 4
+#        taskmanager.memory.network.fraction: 0.2
+#        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+#        metrics.reporter.prom.port: 9249
+#    volumes:
+#      - flink_results_tm2:/opt/flink/results
+#     depends_on:
+#      jobmanager:
+#        condition: service_healthy
+#    networks:
+#      - cepha-network
+#    restart: on-failure
+#
+#  fluent-bit-tm2:
+#    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.04
+#    container_name: fluent-bit-tm2
+#    volumes:
+#      - flink_results_tm2:/opt/flink/results:ro
+#    environment:
+#      <<: *openobserve-credentials                     # ← GEÄNDERT: aus Anker
+#      FLUENT_BIT_SOURCE: taskmanager
+#      FLUENT_BIT_DB_NAME: fluent-bit-taskmanager1.db
+#    depends_on:
+#      - openobserve
+#    networks:
+#      - cepha-network
+#    restart: always
+#
+#  # ===== Taskmanager 3 =====
+#
+#  taskmanager3:
+# #   image: ghcr.io/xetgatgram/cepha-manager:26.04
+#    build:
+#      context: ../..
+#      dockerfile: deploy/docker/Dockerfile.jobmanager
+#    container_name: flink-taskmanager-3
+#    command: taskmanager
+#    user: "9999:9999"
+#    ports:
+#      - "9252:9249"
+#    environment:
+#      JOB_MANAGER_RPC_ADDRESS: jobmanager
+#      FLINK_PROPERTIES: |
+#        jobmanager.rpc.address: jobmanager
+#        jobmanager.rpc.port: 6123
+#        taskmanager.numberOfTaskSlots: 4
+#        taskmanager.memory.network.fraction: 0.2
+#        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+#        metrics.reporter.prom.port: 9249
+#    volumes:
+#      - flink_results_tm3:/opt/flink/results
+#    depends_on:
+#      jobmanager:
+#        condition: service_healthy
+#    networks:
+#      - cepha-network
+#    restart: on-failure
+#
+#  fluent-bit-tm3:
+#    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.04
+#    container_name: fluent-bit-tm3
+#    volumes:
+#      - flink_results_tm3:/opt/flink/results:ro
+#    environment:
+#      <<: *openobserve-credentials
+#      FLUENT_BIT_SOURCE: taskmanager
+#      FLUENT_BIT_DB_NAME: fluent-bit-taskmanager1.db
+#    depends_on:
+#      - openobserve
+#    networks:
+#      - cepha-network
+#    restart: always
 
 volumes:
   kafka_data:
@@ -331,8 +355,6 @@ volumes:
   flink_results_tm3:
   flink_dlq:
   openobserve_data:
-  # fluent_bit_db_jm:   # nur noetig wenn fluent-bit-jm reaktiviert wird
-  fluent_bit_db_tm1:
 
 networks:
   cepha-network:

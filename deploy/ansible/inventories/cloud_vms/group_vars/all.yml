@@ -1,0 +1,41 @@
+# Projekt
+project_name: "cepha"
+project_dir: "/opt/{{ project_name }}"
+
+vm_ips:
+  jobmanager: "<JOBMANAGER_IP>"
+  kafka: "<KAFKA_IP>"
+  taskmanager1: "<TASKMANAGER1_IP>"
+  taskmanager2: "<TASKMANAGER2_IP>"
+  taskmanager3: "<TASKMANAGER3_IP>"
+
+ghcr_registry: "ghcr.io/xetgatgram"
+
+openobserve_port: 5080
+openobserve_user: "admin@example.local"
+# vault_openobserve_password kommt ebenfalls aus group_vars/vault.yml.
+# Diese Datei wird nicht mitgeliefert - siehe vault.yml.example fuer die
+# Struktur und ansible-vault-Anleitung, um eine eigene vault.yml anzulegen.
+openobserve_password: "{{ vault_openobserve_password }}"
+openobserve_org: "default"
+openobserve_stream: "detection-results"
+
+# Docker
+docker_conflicting_packages:
+  - docker.io
+  - docker-compose
+  - docker-compose-v2
+  - docker-doc
+  - podman-docker
+  - containerd
+  - runc
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+docker_users:
+  - ubuntu

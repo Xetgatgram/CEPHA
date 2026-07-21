@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent: Root pom.xml -->
+    <parent>
+        <groupId>com.covertchannel</groupId>
+        <artifactId>covert-channel-framework</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- Dieses Modul: Assembly -->
+    <groupId>com.covertchannel</groupId>
+    <artifactId>framework-assembly</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Framework Assembly</name>
+    <description>
+        Aggregates all framework modules into a single JAR for Flink deployment.
+        Dies ist eine "Uber-JAR" die alle anderen Module enthält.
+    </description>
+
+    <!-- ALLE anderen Module als Dependencies -->
+    <dependencies>
+        <!-- Framework Core Modules -->
+        <dependency>
+            <groupId>com.covertchannel</groupId>
+            <artifactId>detection-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.covertchannel</groupId>
+            <artifactId>flink-processor</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.covertchannel</groupId>
+            <artifactId>pcap4j-reader</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.covertchannel</groupId>
+            <artifactId>kafka-producer</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Optional: framework-rest-api nur wenn nötig -->
+        <!--
+        <dependency>
+            <groupId>com.covertchannel</groupId>
+            <artifactId>framework-rest-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        -->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Maven Assembly Plugin: Erstellt JAR mit ALLEN Dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <!-- Welche Art von Assembly? jar-with-dependencies -->
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <!-- Wie soll die JAR heißen? -->
+                    <finalName>framework-assembly-${project.version}</finalName>
+                    <!-- Kein -jar-with-dependencies Suffix -->
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <!-- Wann bauen? Im package phase -->
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

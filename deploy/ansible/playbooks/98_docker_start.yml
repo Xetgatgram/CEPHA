@@ -1,0 +1,38 @@
+---
+- name: Docker-Compose auf allen VMs starten
+  hosts: gesamt
+  become: true
+
+  tasks:
+    - name: Docker-Service starten
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Docker-Socket starten
+      ansible.builtin.service:
+        name: docker.socket
+
+        state: started
+        enabled: true
+      ignore_errors: true
+
+    - name: Prüfen, ob Projektverzeichnis existiert
+      ansible.builtin.stat:
+        path: "{{ project_dir }}"
+      register: project_dir_stat
+
+    - name: Prüfen, ob Docker-Compose-Datei existiert
+      ansible.builtin.stat:
+        path: "{{ project_dir }}/docker-compose.yml"
+      register: compose_file_stat
+
+    - name: Docker-Compose-Projekt starten
+      community.docker.docker_compose_v2:
+        project_src: "{{ project_dir }}"
+        state: present
+        pull: never
+      when:
+        - project_dir_stat.stat.exists
+        - compose_file_stat.stat.exists
