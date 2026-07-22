@@ -1,0 +1,8 @@
+# Erzwinge LF-Zeilenenden für Shell-Skripte, unabhängig von lokalen
+# core.autocrlf-Einstellungen (verhindert "$'\r': command not found" in Containern)
+*.sh text eol=lf
+
+# Auch für YAML/Config-Dateien sinnvoll, die in Linux-Containern gelesen werden
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile* text eol=lf
