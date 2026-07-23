@@ -123,6 +123,12 @@ public class AlgorithmJobFactory {
             env.getCheckpointConfig().setCheckpointStorage(
                     "file://" + System.getenv().getOrDefault(
                             "TASKMANAGER_SPILL_DIR", "/tmp"));
+
+            long checkpointIntervalMs = readLongEnv(
+                    CephaConfig.ENV_CHECKPOINT_INTERVAL_MS,
+                    CephaConfig.DEFAULT_CHECKPOINT_INTERVAL_MS);
+            env.enableCheckpointing(checkpointIntervalMs);
+            LOG.info("Checkpointing enabled for {} mode with interval: {} ms", execMode, checkpointIntervalMs);
         }
 
         // Set Parallelism if configured
@@ -633,6 +639,15 @@ public class AlgorithmJobFactory {
         for (String path : classLoaderCache.keySet()) {
             evictClassLoader(path);
         }
+    }
+
+    /**
+     * Reads a long value from the environment, falling back to a default if unset.
+     * Mirrors the helper used in {@link DetectionSinkFactory} for consistency.
+     */
+    private static long readLongEnv(String key, long defaultValue) {
+        String val = System.getenv(key);
+        return val != null ? Long.parseLong(val) : defaultValue;
     }
 
     /**

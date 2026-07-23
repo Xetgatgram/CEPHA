@@ -9,8 +9,12 @@ public class CephaConfig {
     public static final String ENV_OUTPUT_INACTIVITY_INTERVAL = "CEPHA_OUTPUT_INACTIVITY_SECONDS";
     public static final String ENV_OUTPUT_MAX_SIZE_MB         = "CEPHA_OUTPUT_MAX_SIZE_MB";
 
+    // -- Checkpointing --
+    public static final String ENV_CHECKPOINT_INTERVAL_MS      = "CEPHA_CHECKPOINT_INTERVAL_MS";
+
     // -- Defaults --
-    public static final long DEFAULT_ROLLOVER_SEC   = 60;
-    public static final long DEFAULT_INACTIVITY_SEC = 60;
-    public static final long DEFAULT_MAX_SIZE_MB    = 100;
+    public static final long DEFAULT_ROLLOVER_SEC            = 60;
+    public static final long DEFAULT_INACTIVITY_SEC          = 60;
+    public static final long DEFAULT_MAX_SIZE_MB             = 100;
+    public static final long DEFAULT_CHECKPOINT_INTERVAL_MS  = 30000; // 30s, konsistent mit jobmanager FLINK_PROPERTIES
 }
