@@ -16,3 +16,7 @@ Thumbs.db
 # Ansible Vault secrets (project-specific, never committed - see
 # deploy/ansible/inventories/cloud_vms/group_vars/vault.yml.example)
 deploy/ansible/inventories/cloud_vms/group_vars/vault.yml
+
+# Docker Compose local secrets (project-specific, never committed - see
+# deploy/compose/.env.example)
+deploy/compose/.env
