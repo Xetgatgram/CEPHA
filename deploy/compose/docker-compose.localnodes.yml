@@ -47,8 +47,16 @@ services:
         state.backend: rocksdb
         state.backend.rocksdb.memory.managed: true
         taskmanager.memory.managed.size: 256mb
+        # --- Checkpointing ---
+        execution.checkpointing.interval: 30000 #30 Sekunden
+        execution.checkpointing.mode: AT_LEAST_ONCE
+        execution.checkpointing.timeout: 300000
+        execution.checkpointing.tolerable-failed-checkpoints: 2147483647
+        execution.checkpointing.externalized-checkpoint-retention: DELETE_ON_CANCELLATION
+        execution.checkpointing.num-retained: 1
         execution.checkpointing.incremental: true
         execution.checkpointing.dir: file:///opt/flink/checkpoints
+        # ----------------------------------------------
         state.backend.rocksdb.timer-service.factory: heap
         jobmanager.rpc.address: jobmanager
         jobmanager.bind-host: 0.0.0.0
