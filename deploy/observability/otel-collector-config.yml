@@ -43,11 +43,18 @@ processors:
         value: "${env:EXPERIMENT_WINDOW_STRATEGY}"  # pro Run anpassen
         action: insert
 
+extensions:
+  basicauth/openobserve:
+    client_auth:
+      username: "${env:OPENOBSERVE_USER}"
+      password: "${env:OPENOBSERVE_PASSWORD}"
+
 exporters:
   otlphttp:
     endpoint: "http://${env:OPENOBSERVE_HOST}:${env:OPENOBSERVE_PORT}/api/${env:OPENOBSERVE_ORG}/"
+    auth:
+      authenticator: basicauth/openobserve
     headers:
-      Authorization: "Basic ${env:OPENOBSERVE_AUTH}"
       stream-name: default
     tls:
       insecure: true
@@ -55,6 +62,7 @@ exporters:
     verbosity: normal
 
 service:
+  extensions: [basicauth/openobserve]
   pipelines:
     metrics:
       receivers: [prometheus]

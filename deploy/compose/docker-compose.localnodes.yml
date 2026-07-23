@@ -2,13 +2,13 @@
 # Lokales Test-Deployment – simuliert 5 VMs auf einer Maschine
 # Start: docker compose -f docker-compose.localnodes.yml up -d
 # =============================================================================
-x-openobserve: &openobserve-credentials          # zentrale Credentials
+x-openobserve: &openobserve-credentials          # zentrale Credentials - Werte kommen aus .env (siehe .env.example)
   OPENOBSERVE_HOST: openobserve
   OPENOBSERVE_PORT: "5080"
   OPENOBSERVE_ORG: cepha
   OPENOBSERVE_STREAM: detection-results
-  OPENOBSERVE_USER: admin@admin.local
-  OPENOBSERVE_PASSWORD: admin
+  OPENOBSERVE_USER: ${OPENOBSERVE_USER:-admin@admin.local}
+  OPENOBSERVE_PASSWORD: ${OPENOBSERVE_PASSWORD:?Bitte OPENOBSERVE_PASSWORD in .env setzen (min. 8 Zeichen, OpenObserve v0.91+ erzwingt ein Mindestmass an Passwortstärke)}
 
 
 services:
@@ -121,16 +121,15 @@ services:
     volumes:
       - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
     environment:
-      # Base64-kodierter Auth-Header wird automatisch berechnet
-      OPENOBSERVE_AUTH: "Basic YWRtaW5AYWRtaW4ubG9jYWw6bzJvaV9mam42cmprYVQ0bHlnRlNURHdhWlNCRWJvN2NFMkZuTQ=="
+      <<: *openobserve-credentials
+      # Base64-Auth-Header wird zur Laufzeit im Container aus OPENOBSERVE_USER/PASSWORD
+      # berechnet (siehe otel-collector-config.yml, kein hartcodierter Wert mehr -
+      # verhindert dass Passwort-Aenderungen hier vergessen werden)
       JOBMANAGER_HOST: "jobmanager"
       TASKMANAGER1_HOST: "taskmanager1"
       TASKMANAGER2_HOST: "taskmanager2"
       TASKMANAGER3_HOST: "taskmanager3"
-      OPENOBSERVE_HOST: "openobserve"           #
-      OPENOBSERVE_PORT: "5080"
-      OPENOBSERVE_ORG: "cepha"
-      EXPERIMENT_TM_COUNT: "1"                  #  anpassen
+      EXPERIMENT_TM_COUNT: "3"                  #  anpassen
       EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
     depends_on:
       - openobserve
@@ -146,8 +145,8 @@ services:
     ports:
       - "5080:5080"
     environment:
-      ZO_ROOT_USER_EMAIL: admin@admin.local
-      ZO_ROOT_USER_PASSWORD: CEPHA_user0
+      ZO_ROOT_USER_EMAIL: ${OPENOBSERVE_USER:-admin@admin.local}
+      ZO_ROOT_USER_PASSWORD: ${OPENOBSERVE_PASSWORD:?Bitte OPENOBSERVE_PASSWORD in .env setzen (min. 8 Zeichen, OpenObserve v0.91+ erzwingt ein Mindestmass an Passwortstaerke)}
       ZO_QUERY_DEFAULT_LIMIT: "1000000000"
       ZO_MAX_DASHBOARD_SERIES: "1000000000"
     volumes:
