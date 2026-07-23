@@ -30,7 +30,7 @@ services:
       - flink_dlq:/opt/flink/dlq
 
   jobmanager:
-    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
+    image: ghcr.io/xetgatgram/cepha-manager:26.07.1
    # build:
     #  context: ../..
     #  dockerfile: deploy/docker/Dockerfile.jobmanager
@@ -76,7 +76,7 @@ services:
     restart: on-failure
 
   framework:
-    image: ghcr.io/xetgatgram/cepha-rest:26.05.38
+    image: ghcr.io/xetgatgram/cepha-rest:26.07.1
    # build:
     #  context: ../..
     #  dockerfile: deploy/docker/Dockerfile
@@ -122,7 +122,7 @@ services:
       - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
     environment:
       # Base64-kodierter Auth-Header wird automatisch berechnet
-      OPENOBSERVE_AUTH: "YWRtaW5AYWRtaW4ubG9jYWw6YWRtaW4="
+      OPENOBSERVE_AUTH: "Basic YWRtaW5AYWRtaW4ubG9jYWw6bzJvaV9mam42cmprYVQ0bHlnRlNURHdhWlNCRWJvN2NFMkZuTQ=="
       JOBMANAGER_HOST: "jobmanager"
       TASKMANAGER1_HOST: "taskmanager1"
       TASKMANAGER2_HOST: "taskmanager2"
@@ -130,7 +130,7 @@ services:
       OPENOBSERVE_HOST: "openobserve"           #
       OPENOBSERVE_PORT: "5080"
       OPENOBSERVE_ORG: "cepha"
-      EXPERIMENT_TM_COUNT: "3"                  #  anpassen
+      EXPERIMENT_TM_COUNT: "1"                  #  anpassen
       EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
     depends_on:
       - openobserve
@@ -147,7 +147,7 @@ services:
       - "5080:5080"
     environment:
       ZO_ROOT_USER_EMAIL: admin@admin.local
-      ZO_ROOT_USER_PASSWORD: admin
+      ZO_ROOT_USER_PASSWORD: CEPHA_user0
       ZO_QUERY_DEFAULT_LIMIT: "1000000000"
       ZO_MAX_DASHBOARD_SERIES: "1000000000"
     volumes:
@@ -203,7 +203,7 @@ services:
   # ===== Taskmanager 1 =====
 
   taskmanager1:
-    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
+    image: ghcr.io/xetgatgram/cepha-manager:26.07.1
    # build:
     #  context: ../..
    #   dockerfile: deploy/docker/Dockerfile.jobmanager
@@ -239,7 +239,7 @@ services:
     restart: on-failure
 
   fluent-bit-tm1:
-    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.11
+    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.07.1
     #build:
      # context: ../..
      # dockerfile: deploy/docker/Dockerfile.fluent-bit

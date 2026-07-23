@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>framework-rest-api</artifactId>
-    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
