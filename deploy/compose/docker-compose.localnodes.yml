@@ -2,13 +2,13 @@
 # Lokales Test-Deployment – simuliert 5 VMs auf einer Maschine
 # Start: docker compose -f docker-compose.localnodes.yml up -d
 # =============================================================================
-x-openobserve: &openobserve-credentials          # zentrale Credentials - Werte kommen aus .env (siehe .env.example)
+x-openobserve: &openobserve-credentials          # zentrale Credentials (an einer Stelle aendern, gilt fuer otel-collector + openobserve)
   OPENOBSERVE_HOST: openobserve
   OPENOBSERVE_PORT: "5080"
   OPENOBSERVE_ORG: cepha
   OPENOBSERVE_STREAM: detection-results
-  OPENOBSERVE_USER: ${OPENOBSERVE_USER:-admin@admin.local}
-  OPENOBSERVE_PASSWORD: ${OPENOBSERVE_PASSWORD:?Bitte OPENOBSERVE_PASSWORD in .env setzen (min. 8 Zeichen, OpenObserve v0.91+ erzwingt ein Mindestmass an Passwortstärke)}
+  OPENOBSERVE_USER: admin@admin.local
+  OPENOBSERVE_PASSWORD: CEPHA_user0    # OpenObserve v0.91+ erzwingt Mindest-Passwortstaerke (>=8 Zeichen, Gross-/Kleinbuchstaben+Ziffer)
 
 
 services:
@@ -145,8 +145,8 @@ services:
     ports:
       - "5080:5080"
     environment:
-      ZO_ROOT_USER_EMAIL: ${OPENOBSERVE_USER:-admin@admin.local}
-      ZO_ROOT_USER_PASSWORD: ${OPENOBSERVE_PASSWORD:?Bitte OPENOBSERVE_PASSWORD in .env setzen (min. 8 Zeichen, OpenObserve v0.91+ erzwingt ein Mindestmass an Passwortstaerke)}
+      ZO_ROOT_USER_EMAIL: admin@admin.local
+      ZO_ROOT_USER_PASSWORD: CEPHA_user0    # muss mit OPENOBSERVE_PASSWORD oben (Zeile 11) identisch sein
       ZO_QUERY_DEFAULT_LIMIT: "1000000000"
       ZO_MAX_DASHBOARD_SERIES: "1000000000"
     volumes:
