@@ -1,40 +1,61 @@
 # Template
 #
-# Vor der ersten Nutzung kopieren und mit den echten VM-IPs befuellen:
+# Vor der ersten Nutzung kopieren und mit den echten internen VM-IPs
+# sowie dem Bastion-Alias befuellen:
 #   cp hosts.yml.example hosts.yml
+#
+# Zugriff auf die VMs erfolgt ausschliesslich ueber einen Bastion-Host
+# (kein direktes SSH auf die VMs). ansible_host traegt trotzdem die
+# echte private/interne IP jeder VM ein, da drei Stellen im Repo
+# {{ ansible_host }} nutzen, um echte IPs in generierte .env-Dateien
+# zu schreiben (03_deploy_kafka.yml: KAFKA_EXTERNAL_IP,
+# group_vars/jobmanager.yml: jobmanager_rpc_address,
+# group_vars/taskmanager.yml: taskmanager_host) - ein SSH-Alias waere
+# dort als Wert unbrauchbar.
+#
+# Der Bastion-Sprung selbst wird ueber ansible_ssh_common_args mit
+# ProxyJump realisiert und referenziert einen Alias aus der lokalen
+# ~/.ssh/config der Kontrollmaschine, z.B.:
+#
+#   Host <BASTION_ALIAS>
+#     HostName    <BASTION_IP>
+#     User        ubuntu
+#
+# Passe "<BASTION_ALIAS>" unten an den Alias-Namen aus deiner eigenen
+# ~/.ssh/config an (z.B. "huber-bastion").
 #
 # Die Gruppe "gesamt" fasst alle Nodes zusammen (jobmanager + kafka +
 # taskmanager) und wird von den Playbooks 01_prepare_all.yml,
 # 98_docker_start.yml, 99_docker_stop.yml und clean_Docker.yml als
-# gemeinsames Ziel (hosts: gesamt) verwendet. Sie dupliziert keine IPs,
-# sondern referenziert die drei Gruppen unten nur als "children".
+# gemeinsames Ziel (hosts: gesamt) verwendet. Sie dupliziert keine
+# Hosts, sondern referenziert die drei Gruppen unten nur als
+# "children".
 
 all:
+  vars:
+    ansible_user: ubuntu
+    ansible_ssh_common_args: '-o ProxyJump=<BASTION_ALIAS>'
+
   children:
 
     jobmanager:
       hosts:
         vm1:
-          ansible_host: "x.x.x.x"
-          ansible_user: ubuntu
+          ansible_host: "<INTERNE_IP_VM1>"
 
     kafka:
       hosts:
         vm2:
-          ansible_host: "x.x.x.x"
-          ansible_user: ubuntu
+          ansible_host: "<INTERNE_IP_VM2>"
 
     taskmanager:
       hosts:
         vm3:
-          ansible_host: "x.x.x.x"
-          ansible_user: ubuntu
+          ansible_host: "<INTERNE_IP_VM3>"
         vm4:
-          ansible_host: "x.x.x.x"
-          ansible_user: ubuntu
+          ansible_host: "<INTERNE_IP_VM4>"
         vm5:
-          ansible_host: "x.x.x.x"
-          ansible_user: ubuntu
+          ansible_host: "<INTERNE_IP_VM5>"
 
     gesamt:
       children:
