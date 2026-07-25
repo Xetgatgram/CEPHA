@@ -1,9 +1,9 @@
 images:
   - name: "taskmanager"
-    source: "{{ ghcr_registry }}/cepha-manager:26.05.33"
+    source: "{{ ghcr_registry }}/cepha-manager:26.07.1"
     target: "taskmanager:latest"
   - name: "fluent-bit"
-    source: "{{ ghcr_registry }}/cepha-fluent-bit:26.05.11"
+    source: "{{ ghcr_registry }}/cepha-fluent-bit:26.05.30"
     target: "fluent-bit:latest"
   - name: "busybox"
     source: "docker.io/library/busybox:latest"

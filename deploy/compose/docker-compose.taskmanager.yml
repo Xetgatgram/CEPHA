@@ -15,7 +15,7 @@ services:
       - fluent_bit_db:/var/fluent-bit
 
   taskmanager:
-    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
+    image: ghcr.io/xetgatgram/cepha-manager:26.07.1
     container_name: flink-taskmanager
     command: taskmanager
     user: "9999:9999"
