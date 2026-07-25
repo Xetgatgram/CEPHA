@@ -4,17 +4,14 @@ services:
   flink-volume-init:
     image: busybox:latest
     container_name: flink-volume-init
-    command: sh -c "mkdir -p /opt/flink/results /opt/flink/dlq &&
-      chown -R 9999:9999 /opt/flink/results /opt/flink/dlq &&
-      chmod -R 777 /opt/flink/results /opt/flink/dlq  &&
-      mkdir -p /var/fluent-bit && chmod 777 /var/fluent-bit"
+    command: sh -c "mkdir -p /opt/flink/dlq &&
+      chown -R 9999:9999 /opt/flink/dlq &&
+      chmod -R 777 /opt/flink/dlq"
     volumes:
-      - flink_results:/opt/flink/results
       - flink_dlq:/opt/flink/dlq
-      - fluent_bit_db:/var/fluent-bit
   # Flink JobManager
   jobmanager:
-    image: ghcr.io/xetgatgram/cepha-manager:26.05.38
+    image: ghcr.io/xetgatgram/cepha-manager:26.07.1
     container_name: flink-jobmanager
     command: jobmanager
     user: "9999:9999"
@@ -52,7 +49,6 @@ services:
         akka.tcp.timeout: 120s
         web.timeout: 600000
     volumes:
-      - flink_results:/opt/flink/results
       - plugin_storage:/opt/flink-plugins
       - flink_dlq:/opt/flink/dlq
     depends_on:
@@ -65,7 +61,7 @@ services:
   # REST API
 
   framework:
-    image: ghcr.io/xetgatgram/cepha-rest:26.05.38
+    image: ghcr.io/xetgatgram/cepha-rest:26.07.1
     container_name: framework-rest-api
     ports:
       - "8080:8080"
@@ -151,34 +147,10 @@ services:
       - cepha-network
     restart: always
 
-  # Fluent Bit (liest lokale Jobmanager-Ergebnisse)
-  fluent-bit:
-    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.30
-    container_name: fluent-bit
-    volumes:
-      - flink_results:/opt/flink/results:ro
-      - fluent_bit_db:/var/fluent-bit
-    environment:
-      FLUENT_BIT_SOURCE: jobmanager
-      FLUENT_BIT_DB_NAME: fluent-bit-jobmanager.db
-      OPENOBSERVE_HOST: openobserve
-      OPENOBSERVE_PORT: 5080
-      OPENOBSERVE_ORG: "${OPENOBSERVE_ORG}"
-      OPENOBSERVE_STREAM: "${OPENOBSERVE_STREAM:-detection-results}"
-      OPENOBSERVE_USER: "${OPENOBSERVE_USER}"
-      OPENOBSERVE_PASSWORD: "${OPENOBSERVE_PASSWORD}"
-    depends_on:
-      - openobserve
-    networks:
-      - cepha-network
-    restart: always
-
 volumes:
-  flink_results:
   flink_dlq:
   plugin_storage:
   pcap_uploads:
-  fluent_bit_db:
 
 networks:
   cepha-network:
