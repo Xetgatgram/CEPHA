@@ -1,0 +1,43 @@
+# Template
+#
+# Vor der ersten Nutzung kopieren und mit den echten VM-IPs befuellen:
+#   cp hosts.yml.example hosts.yml
+#
+# Die Gruppe "gesamt" fasst alle Nodes zusammen (jobmanager + kafka +
+# taskmanager) und wird von den Playbooks 01_prepare_all.yml,
+# 98_docker_start.yml, 99_docker_stop.yml und clean_Docker.yml als
+# gemeinsames Ziel (hosts: gesamt) verwendet. Sie dupliziert keine IPs,
+# sondern referenziert die drei Gruppen unten nur als "children".
+
+all:
+  children:
+
+    jobmanager:
+      hosts:
+        vm1:
+          ansible_host: "x.x.x.x"
+          ansible_user: ubuntu
+
+    kafka:
+      hosts:
+        vm2:
+          ansible_host: "x.x.x.x"
+          ansible_user: ubuntu
+
+    taskmanager:
+      hosts:
+        vm3:
+          ansible_host: "x.x.x.x"
+          ansible_user: ubuntu
+        vm4:
+          ansible_host: "x.x.x.x"
+          ansible_user: ubuntu
+        vm5:
+          ansible_host: "x.x.x.x"
+          ansible_user: ubuntu
+
+    gesamt:
+      children:
+        jobmanager:
+        kafka:
+        taskmanager:
