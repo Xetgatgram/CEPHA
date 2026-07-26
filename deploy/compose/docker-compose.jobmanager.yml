@@ -106,7 +106,7 @@ services:
       - "4318:4318"   # OTLP HTTP
       - "8889:8888"   # Prometheus metrics
     volumes:
-      - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
+      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
     environment:
       # Base64-kodierter Auth-Header wird automatisch berechnet
         JOBMANAGER_HOST: "${JOBMANAGER_HOST}"

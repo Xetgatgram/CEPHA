@@ -31,7 +31,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
     volumes:
       - /mnt/data/kafka:/var/lib/kafka/data
-      - ../init-kafka-topics.sh:/init-kafka-topics.sh
+      - ./init-kafka-topics.sh:/init-kafka-topics.sh
 
     command: >
       bash -c "
