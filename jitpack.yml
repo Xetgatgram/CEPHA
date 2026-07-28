@@ -1,0 +1,6 @@
+#Just to build the detection-api with Java 17.
+jdk:
+  - openjdk17
+
+install:
+  - mvn -pl detection-api -am install -DskipTests

@@ -103,7 +103,7 @@ services:
     restart: on-failure
 
   fluent-bit:
-    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.05.30
+    image: ghcr.io/xetgatgram/cepha-fluent-bit:26.07.1
     container_name: fluent-bit
     volumes:
       - flink_results:/opt/flink/results:ro
