@@ -1,0 +1,12 @@
+{
+  "algorithmClassName": "com.covertchannel.algorithm.detector.PortEntropyDetector",
+  "algorithmId": "standardReplayTumblingCount2000",
+  "inputTopic": "Faust",
+  "parallelism": 4,
+  "executionMode": "REPLAY",
+  "windowType": "tumbling_count",
+  "windowCount": 2000,
+  "entropyThreshold": 3,
+  "minPackets": 10,
+  "testlauf": "P1_0_replay_tmblcnt_2000PortEntropyDetector"
+}
