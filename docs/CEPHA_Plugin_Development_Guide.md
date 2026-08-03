@@ -291,6 +291,8 @@ Because `DetectionAlgorithm` extends `Serializable`, every field declared in a p
 | `void initialize(FrameworkConfig config)`   | Once at job start                    | -                           |
 | `DetectionResult detect() throws Exception` | At window close or after each packet | `DetectionResult` or `null` |
 | `void close()`                              | Once at job end                      | -                           |
+
+
 `void initialize(FrameworkConfig config)`  
 Called exactly once when the Flink job starts, before any packet arrives. This is the correct place to read algorithm-specific configuration parameters from `FrameworkConfig` and to initialise all internal state. The `FrameworkConfig` object is constructed from the plugin-specific keys in `config.json` and is described in Section 4.4.
 
@@ -309,6 +311,8 @@ Called exactly once when the job terminates, either through a planned shutdown o
 | `boolean supportsFeatureExtraction()`               | `return false`                         | For Feature-based Window Path                                       |
 | `PacketFeatureExtractor getFeatureExtractor()`      | timestamp-only extractor               | For Feature-based Window Path, to extract algorithm-specific fields |
 | `PacketKeyExtractor getKeyExtractor()`              | `srcIP->dstIP` extractor               | If Custom flow partitioning is required                             |
+
+
 Although the framework does not enforce the implementation of a data-processing method at the interface level, every functional plugin must override exactly one of `processFlow()` or `processFlowFeatures()`. Which method applies depends on the chosen execution path as described in Section 2.2. A plugin that overrides neither will compile and deploy without error but will get no data from the Framework. This constraint is intentional by design. The interface imposes no path-specific compile-time obligation so that a single class may be deployed under different configuration, but the runtime consequence of omitting both methods is a silently non-functional plugin.
 
 `void processFlow(NetworkPacket packet)`  
@@ -423,6 +427,7 @@ The following fields and `analysisDetails` entries are written by the framework.
 |`processing_timestamp`|not set|set|set|
 |`flink_window_start`|not set|set (time windows only)|set (time windows only)|
 |`flink_window_end`|not set|set (time windows only)|set (time windows only)|
+
 Plugin authors should avoid using these keys in `addDetail()` to prevent silent overwrites.
 
 If `detect()` returns `null`, the framework discards the result without writing to the output sink or the dead-letter queue.
@@ -441,6 +446,7 @@ Every plugin is deployed with a `config.json` file that the REST API passes to t
 | `getDouble(String key, double default)`   |
 | `getBoolean(String key, boolean default)` |
 | `get(String key)`                         |
+
 All values are stored internally as `Object` and converted via `toString()` before parsing. Plugin authors should not rely on the runtime type of values returned by `get()`.
 
 ##### Framework-Reserved Keys
@@ -580,8 +586,10 @@ Count-based windows are independent of time. In `BATCH` mode, the final window a
 Each window invocation follows the same sequence regardless of window type or path:
 
 
-![[windowflow 1.png|393]]
-
+1. `initialize()` | Once at job start 
+2. `detect()`     | At window close or after each packet
+3. `resetAfterWindow()` | After each window 
+4. `close()`      | Once at job end
 
 `resetAfterWindow()` is a default no-op called by the framework after every `detect()` invocation. Override it to clear per-window state and restore the same initial values set in `initialize()`. If no override is provided, state persists across window boundaries. 
 

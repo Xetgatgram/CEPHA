@@ -90,9 +90,9 @@ https://github.com/Xetgatgram/CEPHA.git
 Pre-built container images are published to the GitHub Container Registry under the same organisation. Both the repository and the images are public. No authentication is required to clone the repository or to pull the images.
 
 ```text
-ghcr.io/CEPHA_ORG/cepha-rest:CEPHA_VERSION
-ghcr.io/CEPHA_ORG/cepha-manager:CEPHA_VERSION
-ghcr.io/CEPHA_ORG/cepha-fluent-bit:CEPHA_VERSION
+ghcr.io/xetgatgram/cepha-rest:26.07.1
+ghcr.io/xetgatgram/cepha-manager:26.07.1
+ghcr.io/xetgatgram/cepha-fluent-bit:26.07.1
 ```
 
 The `cepha-manager` image serves both the JobManager and the TaskManager role. The role is determined by the `command` argument passed in the Compose file, not by the image itself (see Section 2.6).
@@ -214,15 +214,15 @@ Worker Node
 
 The following container images are required to operate CEPHA. Images marked CEPHA are published to the GitHub Container Registry and are public. Images marked External are pulled directly from public registries and require no prior authentication either.
 
-| Image | Source | Used on |
-| --- | --- | --- |
-| `ghcr.io/CEPHA_ORG/cepha-rest:CEPHA_VERSION` | CEPHA | Control Plane |
-| `ghcr.io/CEPHA_ORG/cepha-manager:CEPHA_VERSION` | CEPHA | Control Plane (JobManager role), Worker Nodes (TaskManager role) |
-| `ghcr.io/CEPHA_ORG/cepha-fluent-bit:CEPHA_VERSION` | CEPHA | Worker Nodes |
-| `confluentinc/cp-kafka:7.5.0` | External | Kafka Node |
-| `otel/opentelemetry-collector-contrib:latest` | External | Control Plane |
-| `public.ecr.aws/zinclabs/openobserve:latest` | External | Control Plane |
-| `busybox` | External | Local topology only, volume initialisation init container, exits immediately |
+| Image                                               | Source | Used on |
+|-----------------------------------------------------| --- | --- |
+| `ghcr.io/xetgatgram/cepha-rest:latest`              | CEPHA | Control Plane |
+| `ghcr.io/xetgatgram/cepha-manager:latest`    | CEPHA | Control Plane (JobManager role), Worker Nodes (TaskManager role) |
+| `ghcr.io/xetgatgram/cepha-fluent-bit:latest` | CEPHA | Worker Nodes |
+| `confluentinc/cp-kafka:7.5.0`                       | External | Kafka Node |
+| `otel/opentelemetry-collector-contrib:latest`       | External | Control Plane |
+| `public.ecr.aws/zinclabs/openobserve:latest`        | External | Control Plane |
+| `busybox`                                           | External | Local topology only, volume initialisation init container, exits immediately |
 
 The `cepha-manager` image is used for both the JobManager and TaskManager roles. The role is determined exclusively by the `command` argument passed in the Compose file, `jobmanager` or `taskmanager` respectively. No separate image is required for each role.
 
