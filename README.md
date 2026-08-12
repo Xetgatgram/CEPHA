@@ -19,7 +19,7 @@ For distributed deployment and the full REST API reference, see the [CEPHA Deplo
 ## 1. Start the local stack
 
 ```bash
-git clone https://github.com/CEPHA_ORG/CEPHA_REPO.git
+git clone https://github.com/Xetgatgram/CEPHA.git
 cd CEPHA
 ```
 
