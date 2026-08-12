@@ -20,7 +20,7 @@ For distributed deployment and the full REST API reference, see the [CEPHA Deplo
 
 Download the File
 
-[ deploy/compose/docker-compose.localnodes.yml](https://github.com/Xetgatgram/CEPHA/blob/main/deploy/compose/docker-compose.jobmanager.yml)
+[ deploy/compose/docker-compose.localnodes.yml](https://github.com/Xetgatgram/CEPHA/blob/main/deploy/compose/docker-compose.localnodes.yml))
 
 
 or Check-out the whole Project.
