@@ -78,13 +78,6 @@ Standalone Maven module — no parent POM, builds independently of the CEPHA rep
     </repositories>
 
     <dependencies>
-        <!--
-            detection-api, provided by JitPack.
-            <VERSION> = a git tag, branch name (e.g. Refactor-SNAPSHOT) or commit hash
-            of the CEPHA_ORG/CEPHA_REPO repository.
-            scope=provided: the framework supplies this on the classpath at runtime,
-            so it must NOT be shaded into your plugin JAR.
-        -->
         <dependency>
             <groupId>com.github.Xetgatgram.CEPHA</groupId>
             <artifactId>detection-api</artifactId>
@@ -126,7 +119,6 @@ Standalone Maven module — no parent POM, builds independently of the CEPHA rep
 </project>
 ```
 
-Replace `<VERSION>` with a real git tag, branch name, or commit hash once available. `scope=provided` keeps `detection-api` off your plugin's runtime classpath, the framework supplies it.
 
 ### 2.2 `MyBufferedWindowDetector.java`
 
