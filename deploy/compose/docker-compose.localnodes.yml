@@ -119,33 +119,35 @@ services:
       - cepha-network
     restart: on-failure
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    container_name: otel-collector
-    ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-      - "8889:8888"   # Prometheus metrics
-    volumes:
-      - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
-    environment:
-      <<: *openobserve-credentials
+#only for metric collection from flin
+#if this service is used you have to copy the observability Folder 
+  #otel-collector:
+   # image: otel/opentelemetry-collector-contrib:latest
+    #container_name: otel-collector
+    #ports:
+    #  - "4317:4317"   # OTLP gRPC
+    #  - "4318:4318"   # OTLP HTTP
+    #  - "8889:8888"   # Prometheus metrics
+    #volumes:
+    #  - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
+    #environment:
+    #  <<: *openobserve-credentials
       # Base64-Auth-Header wird zur Laufzeit im Container aus OPENOBSERVE_USER/PASSWORD
       # berechnet (siehe otel-collector-config.yml, kein hartcodierter Wert mehr -
       # verhindert dass Passwort-Aenderungen hier vergessen werden)
-      JOBMANAGER_HOST: "jobmanager"
-      TASKMANAGER1_HOST: "taskmanager1"
-      TASKMANAGER2_HOST: "taskmanager2"
-      TASKMANAGER3_HOST: "taskmanager3"
-      EXPERIMENT_TM_COUNT: "3"                  #  anpassen
-      EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
-    depends_on:
-      - openobserve
-      - jobmanager
-      - taskmanager1
-    networks:
-      - cepha-network
-    restart: always
+     # JOBMANAGER_HOST: "jobmanager"
+     # TASKMANAGER1_HOST: "taskmanager1"
+     # TASKMANAGER2_HOST: "taskmanager2"
+     # TASKMANAGER3_HOST: "taskmanager3"
+     # EXPERIMENT_TM_COUNT: "3"                  #  anpassen
+     # EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
+   # depends_on:
+   #   - openobserve
+   #   - jobmanager
+   #   - taskmanager1
+   # networks:
+   #   - cepha-network
+   # restart: always
 
   openobserve:
     image: public.ecr.aws/zinclabs/openobserve:latest
