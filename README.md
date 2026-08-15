@@ -20,6 +20,10 @@ For distributed deployment and the full REST API reference, see the [CEPHA Deplo
 
 Download the deploy folder
 
+[deploy.zip](https://github.com/Xetgatgram/CEPHA/releases/download/v1.0.0/deploy.zip)
+
+or
+
 ```bash
 curl -LO https://github.com/Xetgatgram/CEPHA/releases/latest/download/deploy.zip
 unzip deploy.zip && cd deploy/compose
