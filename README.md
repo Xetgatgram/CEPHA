@@ -58,7 +58,7 @@ The example below implements the **Buffered Window** path with a tumbling time w
 
 ### 2.1 `pom.xml`
 
-Standalone Maven module — no parent POM, builds independently of the CEPHA repository.
+Standalone Maven module, no parent POM, builds independently of the CEPHA repository.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -94,7 +94,7 @@ Standalone Maven module — no parent POM, builds independently of the CEPHA rep
         <dependency>
             <groupId>com.github.Xetgatgram.CEPHA</groupId>
             <artifactId>detection-api</artifactId>
-            <version>v1.0.0</version>
+            <version>v1.0.1</version>
             <scope>provided</scope>
         </dependency>
 
