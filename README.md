@@ -20,7 +20,7 @@ For distributed deployment and the full REST API reference, see the [CEPHA Deplo
 
 Download the deploy folder
 
-[deploy.zip](https://github.com/Xetgatgram/CEPHA/releases/download/v1.0.0/deploy.zip)
+[deploy.zip](https://github.com/Xetgatgram/CEPHA/releases/download/v1.0.1/deploy.zip)
 
 or
 
