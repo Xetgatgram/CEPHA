@@ -13,7 +13,7 @@ import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
+import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -119,16 +119,19 @@ public class AlgorithmJobFactory {
             LOG.info("Configuring Job for BATCH execution mode.");
         } else {
             env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
-            env.setStateBackend(new HashMapStateBackend());
-            env.getCheckpointConfig().setCheckpointStorage(
-                    "file://" + System.getenv().getOrDefault(
-                            "TASKMANAGER_SPILL_DIR", "/tmp"));
 
             long checkpointIntervalMs = readLongEnv(
                     CephaConfig.ENV_CHECKPOINT_INTERVAL_MS,
                     CephaConfig.DEFAULT_CHECKPOINT_INTERVAL_MS);
             env.enableCheckpointing(checkpointIntervalMs);
+
+            CheckpointConfig checkpointConfig = env.getCheckpointConfig();
+            checkpointConfig.setMinPauseBetweenCheckpoints(Math.max(checkpointIntervalMs / 2, 10_000L));
+            checkpointConfig.setTolerableCheckpointFailureNumber(5);
+            // State-Backend und Checkpoint-Storage nicht gesetzt:
+            // kommen aus der Cluster-Config (FLINK_PROPERTIES) -> RocksDB + shared Volume
             LOG.info("Checkpointing enabled for {} mode with interval: {} ms", execMode, checkpointIntervalMs);
+
         }
 
         // Set Parallelism if configured

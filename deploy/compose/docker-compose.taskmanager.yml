@@ -5,14 +5,15 @@ services:
   flink-volume-init:
     image: busybox:latest
     container_name: flink-volume-init
-    command: sh -c "mkdir -p /opt/flink/results /opt/flink/dlq &&
-      chown -R 9999:9999 /opt/flink/results /opt/flink/dlq &&
-      chmod -R 777 /opt/flink/results /opt/flink/dlq &&
+    command: sh -c "mkdir -p /opt/flink/results /opt/flink/dlq /opt/flink/checkpoints &&
+      chown -R 9999:9999 /opt/flink/results /opt/flink/dlq /opt/flink/checkpoints &&
+      chmod -R 777 /opt/flink/results /opt/flink/dlq /opt/flink/checkpoints &&
       mkdir -p /var/fluent-bit && chmod 777 /var/fluent-bit"
     volumes:
       - flink_results:/opt/flink/results
       - flink_dlq:/opt/flink/dlq
       - fluent_bit_db:/var/fluent-bit
+      - ${TASKMANAGER_SPILL_DIR}/checkpoints:/opt/flink/checkpoints
 
   taskmanager:
     image: ghcr.io/xetgatgram/cepha-manager:26.07.1
@@ -58,24 +59,15 @@ services:
           taskmanager.memory.jvm-overhead.fraction: 0.1
 
           # ── State Backend ────────────────────────────────────────────
-          state.backend.type: rocksdb
-          state.backend.rocksdb.memory.managed: true
-          state.backend.rocksdb.memory.fixed-per-slot: true
-          state.backend.incremental: true
-          state.backend.rocksdb.timer-service.factory: heap
-          state.backend.rocksdb.localdir: ${TASKMANAGER_SPILL_DIR}
+          # hashmap = State im Heap: schnell, konsistent zum Eval-Setup.
+          # Muss zur jobmanager-Config passen.
+          state.backend.type: hashmap
+          execution.checkpointing.dir: file:///opt/flink/checkpoints
 
           # ── Spilling / Temp ──────────────────────────────────────────
           io.tmp.dirs: ${TASKMANAGER_SPILL_DIR}
           taskmanager.working-dir: ${TASKMANAGER_SPILL_DIR}
           taskmanager.runtime.sort-in-batch: true
-
-          # ── Checkpointing ────────────────────────────────────────────
-          execution.checkpointing.interval: 120000
-          execution.checkpointing.min-pause: 30000
-          execution.checkpointing.timeout: 300000
-          execution.checkpointing.mode: AT_LEAST_ONCE
-          execution.checkpointing.num-retained: 2
 
           # ── RPC ──────────────────────────────────────────────────────
           pekko.framesize: 64m
@@ -98,6 +90,7 @@ services:
       - flink_results:/opt/flink/results
       - flink_dlq:/opt/flink/dlq
       - ${TASKMANAGER_SPILL_DIR}:${TASKMANAGER_SPILL_DIR}
+      - ${TASKMANAGER_SPILL_DIR}/checkpoints:/opt/flink/checkpoints
     networks:
       - cepha-network
     restart: on-failure

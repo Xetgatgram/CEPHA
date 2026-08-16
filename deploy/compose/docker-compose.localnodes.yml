@@ -19,19 +19,20 @@ services:
     image: busybox
     container_name: flink-volume-init
     command: sh -c "
-      mkdir -p /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq &&
-      chown -R 9999:9999 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq &&
-      chmod -R 777 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq"
+      mkdir -p /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq /opt/flink/checkpoints &&
+      chown -R 9999:9999 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq /opt/flink/checkpoints &&
+      chmod -R 777 /opt/flink/results-jm /opt/flink/results-tm1 /opt/flink/results-tm2 /opt/flink/results-tm3 /opt/flink/dlq /opt/flink/checkpoints"
     volumes:
       - flink_results_jm:/opt/flink/results
       - flink_results_tm1:/opt/flink/results-tm1
       - flink_results_tm2:/opt/flink/results-tm2
       - flink_results_tm3:/opt/flink/results-tm3
       - flink_dlq:/opt/flink/dlq
+      - flink_checkpoints:/opt/flink/checkpoints
 
   jobmanager:
     image: ghcr.io/xetgatgram/cepha-manager:26.07.1
-   # build:
+    # build:
     #  context: ../..
     #  dockerfile: deploy/docker/Dockerfile.jobmanager
     container_name: flink-jobmanager
@@ -44,20 +45,12 @@ services:
     environment:
       JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
-        state.backend: rocksdb
-        state.backend.rocksdb.memory.managed: true
-        taskmanager.memory.managed.size: 256mb
-        # --- Checkpointing ---
-        execution.checkpointing.interval: 30000 #30 Sekunden
-        execution.checkpointing.mode: AT_LEAST_ONCE
-        execution.checkpointing.timeout: 300000
-        execution.checkpointing.tolerable-failed-checkpoints: 2147483647
-        execution.checkpointing.externalized-checkpoint-retention: DELETE_ON_CANCELLATION
-        execution.checkpointing.num-retained: 1
-        execution.checkpointing.incremental: true
+        # --- State Backend: Deployment-Entscheidung ---
+        # hashmap = schnell (State im Heap), rocksdb = fuer State groesser als der Heap
+        state.backend.type: hashmap
+        # --- Checkpointing: Storage-Pfad (shared Volume). Intervall/Toleranz setzt der Job-Code ---
         execution.checkpointing.dir: file:///opt/flink/checkpoints
-        # ----------------------------------------------
-        state.backend.rocksdb.timer-service.factory: heap
+        execution.checkpointing.num-retained: 1
         jobmanager.rpc.address: jobmanager
         jobmanager.bind-host: 0.0.0.0
         jobmanager.rpc.port: 6123
@@ -70,6 +63,7 @@ services:
       - flink_results_jm:/opt/flink/results
       - plugin_storage:/opt/flink-plugins
       - flink_dlq:/opt/flink/dlq
+      - flink_checkpoints:/opt/flink/checkpoints
     depends_on:
       flink-volume-init:
         condition: service_completed_successfully
@@ -84,14 +78,15 @@ services:
     restart: on-failure
 
   framework:
-    image: ghcr.io/xetgatgram/cepha-rest:26.07.1
-   # build:
+    image: ghcr.io/xetgatgram/cepha-rest:local   # lokal gebautes Image mit Checkpoint-Fix
+    # build:
     #  context: ../..
     #  dockerfile: deploy/docker/Dockerfile
     container_name: framework-rest-api
     ports:
       - "8080:8080"
     environment:
+      CEPHA_CHECKPOINT_INTERVAL_MS: "120000"   # 2 min statt 30 s -> weniger Checkpoint-Overhead
       flink.cluster.host: jobmanager
       flink.cluster.port: "6123"
       FLINK_CLUSTER_REST_PORT: 8081
@@ -119,35 +114,35 @@ services:
       - cepha-network
     restart: on-failure
 
-#only for metric collection from flin
-#if this service is used you have to copy the observability Folder 
-  #otel-collector:
-   # image: otel/opentelemetry-collector-contrib:latest
-    #container_name: otel-collector
-    #ports:
-    #  - "4317:4317"   # OTLP gRPC
-    #  - "4318:4318"   # OTLP HTTP
-    #  - "8889:8888"   # Prometheus metrics
-    #volumes:
-    #  - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
-    #environment:
-    #  <<: *openobserve-credentials
+      #only for metric collection from flin
+      #if this service is used you have to copy the observability Folder
+      #otel-collector:
+      # image: otel/opentelemetry-collector-contrib:latest
+      #container_name: otel-collector
+      #ports:
+      #  - "4317:4317"   # OTLP gRPC
+      #  - "4318:4318"   # OTLP HTTP
+      #  - "8889:8888"   # Prometheus metrics
+      #volumes:
+      #  - ../observability/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
+      #environment:
+      #  <<: *openobserve-credentials
       # Base64-Auth-Header wird zur Laufzeit im Container aus OPENOBSERVE_USER/PASSWORD
       # berechnet (siehe otel-collector-config.yml, kein hartcodierter Wert mehr -
       # verhindert dass Passwort-Aenderungen hier vergessen werden)
-     # JOBMANAGER_HOST: "jobmanager"
-     # TASKMANAGER1_HOST: "taskmanager1"
-     # TASKMANAGER2_HOST: "taskmanager2"
-     # TASKMANAGER3_HOST: "taskmanager3"
-     # EXPERIMENT_TM_COUNT: "3"                  #  anpassen
-     # EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
-   # depends_on:
-   #   - openobserve
-   #   - jobmanager
-   #   - taskmanager1
-   # networks:
-   #   - cepha-network
-   # restart: always
+      # JOBMANAGER_HOST: "jobmanager"
+      # TASKMANAGER1_HOST: "taskmanager1"
+      # TASKMANAGER2_HOST: "taskmanager2"
+      # TASKMANAGER3_HOST: "taskmanager3"
+      # EXPERIMENT_TM_COUNT: "3"                  #  anpassen
+    # EXPERIMENT_WINDOW_STRATEGY: "tumbling"    #  anpassen
+    # depends_on:
+    #   - openobserve
+    #   - jobmanager
+    #   - taskmanager1
+    # networks:
+    #   - cepha-network
+    # restart: always
 
   openobserve:
     image: public.ecr.aws/zinclabs/openobserve:latest
@@ -191,7 +186,9 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
     volumes:
-      - /mnt/e/Master_project/kafkaData:/var/lib/kafka/data
+      # Named Volume statt /mnt/e/...: Windows-Laufwerke laufen in WSL2 ueber das langsame
+      # 9p-Protokoll und bremsen Kafka massiv. Volume liegt im WSL2-ext4 -> deutlich schneller.
+      - kafka_data:/var/lib/kafka/data
       - ../init-kafka-topics.sh:/init-kafka-topics.sh
     command: >
       bash -c "
@@ -213,9 +210,9 @@ services:
 
   taskmanager1:
     image: ghcr.io/xetgatgram/cepha-manager:26.07.1
-   # build:
+    # build:
     #  context: ../..
-   #   dockerfile: deploy/docker/Dockerfile.jobmanager
+    #   dockerfile: deploy/docker/Dockerfile.jobmanager
     container_name: flink-taskmanager-1
     command: taskmanager
     user: "9999:9999"
@@ -225,18 +222,10 @@ services:
       CEPHA_DLQ_PATH: /opt/flink/dlq
       JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
-        state.backend: rocksdb
-        state.backend.rocksdb.memory.managed: true
-        taskmanager.memory.managed.size: 256mb
-        # ── Checkpointing ────────────────────────────────────────────
-        execution.checkpointing.interval: 120000
-        execution.checkpointing.min-pause: 30000
-        execution.checkpointing.timeout: 300000
-        execution.checkpointing.mode: AT_LEAST_ONCE
-        execution.checkpointing.num-retained: 2
-        execution.checkpointing.incremental: true
+        # --- State Backend: muss zum jobmanager passen ---
+        state.backend.type: hashmap
+        taskmanager.memory.process.size: 4g   # genug Heap fuer HashMap-State (an PC anpassen)
         execution.checkpointing.dir: file:///opt/flink/checkpoints
-        state.backend.rocksdb.timer-service.factory: heap
         jobmanager.rpc.address: jobmanager
         jobmanager.rpc.port: 6123
         taskmanager.numberOfTaskSlots: 4
@@ -246,18 +235,19 @@ services:
     volumes:
       - flink_results_tm1:/opt/flink/results
       - flink_dlq:/opt/flink/dlq
+      - flink_checkpoints:/opt/flink/checkpoints
     depends_on:
-       jobmanager:
-          condition: service_healthy
+      jobmanager:
+        condition: service_healthy
     networks:
       - cepha-network
     restart: on-failure
 
   fluent-bit-tm1:
     image: ghcr.io/xetgatgram/cepha-fluent-bit:26.07.1
-    #build:
-     # context: ../..
-     # dockerfile: deploy/docker/Dockerfile.fluent-bit
+      #build:
+      # context: ../..
+    # dockerfile: deploy/docker/Dockerfile.fluent-bit
     container_name: fluent-bit-tm1
     volumes:
       - flink_results_tm1:/opt/flink/results:ro
@@ -363,6 +353,7 @@ services:
 
 volumes:
   kafka_data:
+  flink_checkpoints:
   plugin_storage:
   flink_results_jm:
   flink_results_tm1:
