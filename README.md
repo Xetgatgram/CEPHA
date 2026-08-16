@@ -36,9 +36,9 @@ git clone https://github.com/Xetgatgram/CEPHA.git
 cd CEPHA
 ```
 
-Before starting, adjust the two host-specific bind-mount paths in `docker-compose.localnodes.yml`:
-- PCAP upload directory (`framework` service)
-- Kafka persistent log storage (`kafka` service)
+Before starting,you could adjust the host-specific bind-mount path in `docker-compose.localnodes.yml`:
+- PCAP upload directory (`framework` service), this is "~/pcap-files"
+
 
 Then start everything:
 
