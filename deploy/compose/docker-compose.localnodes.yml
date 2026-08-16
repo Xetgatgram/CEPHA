@@ -78,7 +78,7 @@ services:
     restart: on-failure
 
   framework:
-    image: ghcr.io/xetgatgram/cepha-rest:local   # lokal gebautes Image mit Checkpoint-Fix
+    image: ghcr.io/xetgatgram/cepha-rest:26.07.01
     # build:
     #  context: ../..
     #  dockerfile: deploy/docker/Dockerfile
@@ -101,7 +101,7 @@ services:
       CEPHA_DLQ_PATH: /opt/flink/dlq
     volumes:
       - plugin_storage:/opt/flink-plugins
-      - /mnt/e/covert-channel-framework/pcap-files:/pcap-files:ro
+      - ~/pcap-files:/pcap-files:ro
     depends_on:
       - jobmanager
       - kafka
