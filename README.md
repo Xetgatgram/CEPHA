@@ -18,12 +18,18 @@ For distributed deployment and the full REST API reference, see the [CEPHA Deplo
 
 ## 1. Start the local stack
 
-Download the File
+Download the deploy folder
 
-[ deploy/compose/docker-compose.localnodes.yml](https://github.com/Xetgatgram/CEPHA/blob/main/deploy/compose/docker-compose.localnodes.yml)
+[deploy.zip](https://github.com/Xetgatgram/CEPHA/releases/download/v1.0.0/deploy.zip)
 
+or
 
-or Check-out the whole Project.
+```bash
+curl -LO https://github.com/Xetgatgram/CEPHA/releases/latest/download/deploy.zip
+unzip deploy.zip && cd deploy/compose
+```
+
+or check-out the whole project.
 
 ```bash
 git clone https://github.com/Xetgatgram/CEPHA.git
